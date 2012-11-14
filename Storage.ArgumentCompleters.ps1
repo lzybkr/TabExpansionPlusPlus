@@ -7,7 +7,7 @@
 #
 function Storage_PhysicalDiskFriendlyNameParameterCompletion
 {
-    [ArgumentCompleter(
+    [ArgumentCompleterAttribute(
         Parameter = 'FriendlyName',
         Command = ('Get-PhysicalDisk', 'Reset-PhysicalDisk', 'Set-PhysicalDisk'),
         Description = 'Complete physical disk friendly names.')]

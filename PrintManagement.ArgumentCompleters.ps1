@@ -5,11 +5,11 @@
 #
 function PrinterNameArgumentCompletion
 {
-    [ArgumentComplete(
+    [ArgumentCompleterAttribute(
         Parameter = 'Name',
         Command = ('Get-Printer', 'Remove-Printer', 'Set-Printer'),
         Description = 'Complete printer names')]
-    [ArgumentComplete(
+    [ArgumentCompleterAttribute(
         Parameter = 'PrinterName',
         Command = { Get-Command -Module PrintManagement -ParameterName PrinterName },
         Description = 'Complete printer names')]
@@ -40,7 +40,7 @@ function PrinterNameArgumentCompletion
 #
 function PrinterDriverNameArgumentCompletion
 {
-    [ArgumentCompleter(
+    [ArgumentCompleterAttribute(
         Parameter = 'Name',
         Command = ('Get-PrinterDriver', 'Remove-PrinterDriver'),
         Description = 'Complete printer driver names.')]
@@ -70,7 +70,7 @@ function PrinterDriverNameArgumentCompletion
 #
 function PrinterPortArgumentCompletion
 {
-    [ArgumentCompleter(
+    [ArgumentCompleterAttribute(
         Parameter = 'Name',
         Command = ('Get-PrinterPort', 'Remove-PrinterPort'),
         Description = 'Complete printer port names.')]

@@ -5,7 +5,7 @@
 #
 function ScheduledTaskTaskNameArgumentCompletion
 {
-    [ArgumentCompleter(
+    [ArgumentCompleterAttribute(
         Parameter = 'TaskName',
         Command = { Get-Command -Module ScheduledTasks -ParameterName TaskName },
         Description = 'Complete task names')]
@@ -26,7 +26,7 @@ function ScheduledTaskTaskNameArgumentCompletion
 #
 function ScheduledTaskTaskPathArgumentCompletion
 {
-    [ArgumentCompleter(
+    [ArgumentCompleterAttribute(
         Parameter = 'TaskPath',
         Command = {
             # REVIEW: should Set-ScheduledTask be excluded?
