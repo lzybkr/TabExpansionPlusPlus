@@ -19,6 +19,7 @@ function InitClassIdTable
             {
                 $description = $subKey.GetValue('')
                 $result[$progId] = $description
+                break
             }
         }
     }
