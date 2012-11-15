@@ -6,7 +6,7 @@
 #
 function DirAttributesParameterNameCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = "Attributes",
         Command = "Get-ChildItem",
         Description = @"

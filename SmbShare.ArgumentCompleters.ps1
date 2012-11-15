@@ -5,7 +5,7 @@
 #
 function SmbShareNameParameterCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Name',
         Command = ('Get-SmbShare', 'Remove-SmbShare', 'Set-SmbShare'),
         Description = 'Complete share names.')]

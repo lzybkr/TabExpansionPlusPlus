@@ -6,7 +6,7 @@
 #
 function PowerShellExeCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Native,
         Command = 'PowerShell',
         Description = 'Complete parameters and arguments to powershell.exe')]
@@ -71,7 +71,7 @@ function PowerShellExeCompletion
 #
 function NetExeCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Native,
         Command = 'Net',
         Description = 'Complete arguments to net.exe')]
@@ -94,7 +94,7 @@ function NetExeCompletion
 #
 function InitBCDEditCompletions
 {
-    [InitializeArgumentCompleterAttribute('BCDEdit')]
+    [InitializeArgumentCompleter('BCDEdit')]
     param()
 
     # This is a very naive implementation - parse the output of bcdedit
@@ -119,7 +119,7 @@ function InitBCDEditCompletions
 #
 function BCDEditExeCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Native,
         Command = 'bcdedit',
         Description = 'Complete arguments to bcdedit.exe')]

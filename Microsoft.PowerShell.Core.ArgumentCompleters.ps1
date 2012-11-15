@@ -6,7 +6,7 @@
 #
 function HelpParameterNameCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Parameter',
         Command = ('help','Get-Help'),
         Description = 'Complete parameter names for get-help, for example: Get-Help -Name Get-ChildItem -Parameter <TAB>')]
@@ -53,7 +53,7 @@ function HelpParameterNameCompletion
 #
 function GetSnapinCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Name',
         Command = 'Get-PSSnapin',
         Description = 'Complete loaded snapins for: Get-PSSnapin -Name <TAB>')]
@@ -74,7 +74,7 @@ function GetSnapinCompletion
 #
 function AddSnapinCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Name',
         Command = 'Add-PSSnapin',
         Description = 'Complete registered snapins for: Add-PSSnapin -Name <TAB>')]
@@ -94,7 +94,7 @@ function AddSnapinCompletion
 #
 function VerbCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Verb',
         Command = 'Get-Command',
         Description = 'Complete valid verbs for: Get-Command -Verb <TAB>')]
@@ -114,7 +114,7 @@ function VerbCompletion
 #
 function NounCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Noun',
         Command = 'Get-Command',
         Description = 'Complete nouns for: Get-Command -Noun <TAB>')]
@@ -135,7 +135,7 @@ function NounCompletion
 #
 function PSSessionConfigurationNameCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'ConfigurationName',
         Command = ('Connect-PSSession', 'Enter-PSSession',
                    'Get-PSSession', 'Invoke-Command',

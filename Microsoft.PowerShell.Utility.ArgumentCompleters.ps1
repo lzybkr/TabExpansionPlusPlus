@@ -4,7 +4,7 @@
 #
 function InitClassIdTable
 {
-    [InitializeArgumentCompleterAttribute('New-Object_ComObject')]
+    [InitializeArgumentCompleter('New-Object_ComObject')]
     param()
 
     $progIds = [Microsoft.Win32.Registry]::ClassesRoot.GetSubKeyNames()
@@ -58,7 +58,7 @@ function InitClassIdTable
 #
 function NewComObjectCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'ComObject',
         Command = 'New-Object',
         Description = 'Complete com object class ids for New-Object -ComObject <TAB>')]
@@ -83,7 +83,7 @@ function NewComObjectCompletion
 #
 function EventNameCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'EventName',
         Command = 'Register-ObjectEvent',
         Description = @'
@@ -115,7 +115,7 @@ Complete the -EventName argument for Register-ObjectEvent, for example:
 #
 function OutPrinterNameArgumentCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Name',
         Command = 'Out-Printer',
         Description = 'Complete printer names for Out-Printer')]

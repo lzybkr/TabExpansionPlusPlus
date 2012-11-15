@@ -6,7 +6,7 @@
 #
 function CounterParameterCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'Counter',
         Command = 'Get-Counter',
         Description = @'
@@ -40,7 +40,7 @@ Complete counter for the Get-Counter cmdlet, optionally on a remote machine. For
 #
 function ListSetParameterCompletion
 {
-    [ArgumentCompleterAttribute(
+    [ArgumentCompleter(
         Parameter = 'ListSet',
         Command = 'Get-Counter',
         Description = @'
