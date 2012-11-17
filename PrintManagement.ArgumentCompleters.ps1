@@ -1,15 +1,15 @@
-#
+﻿#
 # .SYNOPSIS
 #
 #    Complete the -Name argument to Printer cmdlets
 #
 function PrinterNameArgumentCompletion
 {
-    [ArgumentComplete(
+    [ArgumentCompleter(
         Parameter = 'Name',
         Command = ('Get-Printer', 'Remove-Printer', 'Set-Printer'),
         Description = 'Complete printer names')]
-    [ArgumentComplete(
+    [ArgumentCompleter(
         Parameter = 'PrinterName',
         Command = { Get-Command -Module PrintManagement -ParameterName PrinterName },
         Description = 'Complete printer names')]

@@ -1,4 +1,4 @@
-#
+﻿#
 # .SYNOPSIS
 #
 #    Complete the -Name argument to *SmbShare cmdlets

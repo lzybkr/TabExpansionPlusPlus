@@ -1,4 +1,4 @@
-#
+﻿#
 # .SYNOPSIS
 #
 #    Complete the -TaskName argument to ScheduledTask module cmdlets
