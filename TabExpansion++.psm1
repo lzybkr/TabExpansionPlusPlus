@@ -315,6 +315,8 @@ function Update-ArgumentCompleter
         $ps = [powershell]::Create()
         $null = $ps.AddScript($function:LoadArgumentCompleters.Ast.Extent.Text).Invoke()
         $ps.Commands.Clear()
+        $null = $ps.AddScript(${function:Get-CommandWithParameter}.Ast.Extent.Text).Invoke()
+        $ps.Commands.Clear()
         $null = $ps.AddScript($scriptBlock).
             AddParameter('backgroundResultsQueue', $backgroundResultsQueue).BeginInvoke()
         # We aren't expecting any results back, so we can ignore the IAsyncResult and
@@ -498,13 +500,13 @@ filter LoadArgumentCompleters
         $result = & $scriptBlock
         foreach ($attrInst in $attrInsts)
         {
-            $pair = [pscustomobject]@{
+            $setCompletionPrivateDataParams = @{
                 Key = $attrInst.Key
                 Value = $result
             }
             $backgroundResultsQueue.Enqueue([pscustomobject]@{
                 InitializationData = $true
-                Value = $pair})
+                Value = $setCompletionPrivateDataParams})
         }
     }
 }

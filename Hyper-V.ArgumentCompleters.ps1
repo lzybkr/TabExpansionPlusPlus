@@ -10,7 +10,7 @@ function HyperV_VMNameArgumentCompletion
     [ArgumentCompleter(
         Parameter = 'Name',
         # REVIEW - exclude New-VM?  Others?
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VM -ParameterName Name},
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VM -ParameterName Name },
         Description = 'Complete VM names, for example: Get-VM -Name <TAB>')]
     [ArgumentCompleter(
         Parameter = 'VMName',
@@ -47,7 +47,7 @@ function HyperV_VMSwitchArgumentCompletion
         Description = 'Complete switch names, for example: Get-VMSwitch -Name <TAB>')]
     [ArgumentCompleter(
         Parameter = 'SwitchName',
-        Command = { Get-CommandWithParameter -Module Hyper-V -ParameterName SwitchName  },
+        Command = { Get-CommandWithParameter -Module Hyper-V -ParameterName SwitchName },
         Description = 'Complete switch names, for example: New-VM -SwitchName <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
@@ -76,7 +76,7 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
 {
     [ArgumentCompleter(
         Parameter = 'Name',
-        Command = { Get-Command -Module Hyper-V -Noun VMIntegrationService -ParameterName Name  },
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VMIntegrationService -ParameterName Name },
         Description = 'Complete integration service names, e.g. Get-VMIntegrationService -VMName myvm -Name <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
