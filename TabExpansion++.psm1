@@ -598,7 +598,7 @@ function TryAttributeArgumentCompletion
                 ForEach-Object {
                     $propType = [Microsoft.PowerShell.ToStringCodeMethods]::Type($_.PropertyType)
                     $propName = $_.Name
-                    New-CompletionResult $propName -ToolTip "$proptType $propName" -CompletionResultType Property
+                    New-CompletionResult $propName -ToolTip "$propType $propName" -CompletionResultType Property
                 }
 
             return [PSCustomObject]@{
@@ -687,6 +687,12 @@ function global:TabExpansion2
         {
             $results.ReplacementIndex = $attributeResults.ReplacementIndex
             $results.ReplacementLength = $attributeResults.ReplacementLength
+            if ($results.CompletionMatches.IsReadOnly)
+            {
+                # Workaround where PowerShell returns a readonly collection that we need to add to.
+                $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
+                $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
+            }
             $attributeResults.Results | ForEach-Object {
                 $results.CompletionMatches.Add($_) }
         }
