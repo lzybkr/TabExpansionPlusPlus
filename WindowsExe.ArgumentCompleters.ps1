@@ -87,30 +87,6 @@ function NetExeCompletion
         }
 }
 
-#
-# .SYNOPSIS
-#
-#     Initialize completions needed for bcdedit.
-#
-function InitBCDEditCompletions
-{
-    [InitializeArgumentCompleter('BCDEdit')]
-    param()
-
-    # This is a very naive implementation - parse the output of bcdedit
-    # run a couple different ways to collect candidate completions.
-
-    $switches = bcdedit /? 2>$null | ForEach-Object { [regex]::Matches($_, '/\w+').Value } | Sort-Object -Unique
-    $switches += '/?'
-
-    $nestedSwitches = @()
-    foreach ($switch in $switches)
-    {
-        $nestedSwitches += bcdedit /? $switch 2>$null | ForEach-Object { [regex]::Matches($_, '/\w+').Value }
-    }
-    
-    return ($switches += $nestedSwitches) | Sort-Object -Unique
-}
 
 #
 # .SYNOPSIS
@@ -126,6 +102,23 @@ function BCDEditExeCompletion
     param($wordToComplete, $commandAst)
 
     $BCDEditSwitches = Get-CompletionPrivateData -Key BCDEdit
+    if ($null -eq $BCDEditSwitches)
+    {
+        # This is a very naive implementation - parse the output of bcdedit
+        # run a couple different ways to collect candidate completions.
+
+        $switches = bcdedit /? 2>$null | ForEach-Object { [regex]::Matches($_, '/\w+').Value } | Sort-Object -Unique
+        $switches += '/?'
+
+        $nestedSwitches = @()
+        foreach ($switch in $switches)
+        {
+            $nestedSwitches += bcdedit /? $switch 2>$null | ForEach-Object { [regex]::Matches($_, '/\w+').Value }
+        }
+    
+        $BCDEditSwitches = ($switches += $nestedSwitches) | Sort-Object -Unique
+        Set-CompletionPrivateData -Key BCDEdit -Value $BCDEditSwitches
+    }
 
     $BCDEditSwitches |
         Where-Object { $_ -like "$wordToComplete*" } |
