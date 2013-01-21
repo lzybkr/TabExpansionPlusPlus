@@ -455,14 +455,14 @@ filter LoadArgumentCompleters
     ForEach-FunctionWithAttribute $paramAsts ([ArgumentCompleterAttribute]) {
         param($scriptBlock)
 
-        $registerParams = @{
-            ScriptBlock = $scriptBlock
-        }
-
         # Multiple ArgumentCompleter attributes are supported
         $attrInsts = $scriptBlock.Attributes | Where-Object { $_ -is [ArgumentCompleterAttribute] }
         foreach ($attrInst in $attrInsts)
         {
+            $registerParams = @{
+                ScriptBlock = $scriptBlock
+            }
+
             # Review - use the function name as the description if no description is provided?
             if ($attrInst.Description)
             {
@@ -524,10 +524,6 @@ function Flush-BackgroundResultsQueue
         $parameters = $item.Value
         if ($item.ArgumentCompleter)
         {
-            if ($null -eq $parameters.CommandName)
-            {
-                if ($global:foo -eq 'foo') { $global:foo = $null; $host.EnterNestedPrompt() }
-            }
             Register-ArgumentCompleter @parameters 
         }
         elseif ($item.InitializationData)
