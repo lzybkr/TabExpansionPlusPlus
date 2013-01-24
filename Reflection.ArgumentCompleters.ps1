@@ -8,7 +8,5 @@ function Reflection_GetContstructorArgumentCompletion
         Command = 'Get-Constructor',
         Description = 'Complete type names, for example: Get-Constructor -Type <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    $line = 'New-Object -TypeName {0}' -f $wordToComplete
-    TabExpansion2 -inputScript $line -cursorColumn $line.Length | select -ExpandProperty CompletionMatches
+    [System.Management.Automation.CompletionCompleters]::CompleteType($wordToComplete)
 }
