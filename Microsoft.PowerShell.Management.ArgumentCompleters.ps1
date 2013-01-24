@@ -24,3 +24,24 @@ Complete file attributes like Hidden or ReadOnly, for example:
             New-CompletionResult $_
         }
 }
+
+function NewItemItemTypeCompletion
+{
+    [ArgumentCompleter(
+        Parameter = "ItemType",
+        Command = "New-Item",
+        Description = @"
+Complete item types (in FileSystem), for example:
+
+    New-Item -ItemType <TAB>
+"@)]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Write-Output File, Directory |
+        Where-Object { $_ -like "$wordToComplete*" } |
+        Sort-Object |
+        ForEach-Object {
+            # TODO - use xml docs for tooltip
+            New-CompletionResult $_ -ToolTip "Create $_"
+        }
+}
