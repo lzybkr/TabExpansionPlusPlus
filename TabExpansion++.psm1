@@ -288,6 +288,7 @@ function Register-ArgumentCompleter
 #
 function Update-ArgumentCompleter
 {
+[CmdletBinding()]
     param([switch]$AsJob)
 
     $scriptBlock = {
@@ -468,28 +469,27 @@ filter LoadArgumentCompleters
             {
                 $registerParams.Description = $attrInst.Description
             }
-            foreach ($c in $attrInst.Command)
-            {                
-                if ($c -is [ScriptBlock])
-                {
-                    $registerParams.CommandName = & $c | % { [string]$_ }
-                }
-                else
-                {
-                    $registerParams.CommandName = [string]$c
-                }
-                if ($attrInst.Native)
-                {
-                    $registerParams.Native = $true
-                }
-                elseif ($null -ne $registerParams.CommandName)
-                {
-                    $registerParams.ParameterName = $attrInst.Parameter
-                }
-                $backgroundResultsQueue.Enqueue([pscustomobject]@{
-                    ArgumentCompleter = $true
-                    Value = $registerParams})
-            }            
+            if ($attrInst.Command -is [ScriptBlock])
+            {
+                $registerParams.CommandName = & $attrInst.Command | 
+                    ForEach-Object { [string]$_ }
+            }
+            else
+            {
+                $registerParams.CommandName = [string[]]@($attrInst.Command)
+            }
+            if ($attrInst.Native)
+            {
+                $registerParams.Native = $true
+            }
+            elseif ($null -ne $registerParams.CommandName)
+            {
+                $registerParams.ParameterName = $attrInst.Parameter
+            }
+            $backgroundResultsQueue.Enqueue([pscustomobject]@{
+                ArgumentCompleter = $true
+                Value = $registerParams})
+                        
         }
     }
 
