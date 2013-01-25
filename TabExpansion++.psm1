@@ -468,28 +468,30 @@ filter LoadArgumentCompleters
             {
                 $registerParams.Description = $attrInst.Description
             }
-            foreach ($c in $attrInst.Command)
-            {                
-                if ($c -is [ScriptBlock])
-                {
-                    $registerParams.CommandName = & $c | % { [string]$_ }
-                }
-                else
-                {
-                    $registerParams.CommandName = [string]$c
-                }
-                if ($attrInst.Native)
-                {
-                    $registerParams.Native = $true
-                }
-                elseif ($null -ne $registerParams.CommandName)
-                {
-                    $registerParams.ParameterName = $attrInst.Parameter
-                }
-                $backgroundResultsQueue.Enqueue([pscustomobject]@{
-                    ArgumentCompleter = $true
-                    Value = $registerParams})
-            }            
+
+            $registerParams.CommandName =
+                [string[]]($attrInst.Command | ForEach-Object {
+                    if ($_ -is [ScriptBlock])
+                    {
+                        & $_
+                    }
+                    else
+                    {
+                        $_
+                    }
+                })
+
+            if ($attrInst.Native)
+            {
+                $registerParams.Native = $true
+            }
+            elseif ($null -ne $registerParams.CommandName)
+            {
+                $registerParams.ParameterName = $attrInst.Parameter
+            }
+            $backgroundResultsQueue.Enqueue([pscustomobject]@{
+                ArgumentCompleter = $true
+                Value = $registerParams})
         }
     }
 
