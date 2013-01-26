@@ -288,7 +288,7 @@ function Register-ArgumentCompleter
 #
 function Update-ArgumentCompleter
 {
-[CmdletBinding()]
+    [CmdletBinding()]
     param([switch]$AsJob)
 
     $scriptBlock = {
@@ -469,6 +469,7 @@ filter LoadArgumentCompleters
             {
                 $registerParams.Description = $attrInst.Description
             }
+
             $registerParams.CommandName =
                 [string[]]($attrInst.Command | ForEach-Object {
                     if ($_ -is [ScriptBlock])
