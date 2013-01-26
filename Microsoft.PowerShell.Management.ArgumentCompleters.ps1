@@ -31,17 +31,38 @@ function NewItemItemTypeCompletion
         Parameter = "ItemType",
         Command = "New-Item",
         Description = @"
-Complete item types (in FileSystem), for example:
+Complete item types (in FileSystem/ ActiveDirectory), for example:
 
     New-Item -ItemType <TAB>
 "@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    Write-Output File, Directory |
+    $cn = $fakeBoundParameter["Path"]
+    if($cn)
+    {
+        $Resolved = Resolve-Path -Path $cn
+    }
+    else
+    {
+        $Resolved = $PWD
+    }
+    $Set = switch ($Resolved.Provider.Name) {
+        FileSystem {
+            Write-Output File, Directory   
+        }
+        ActiveDirectory {
+            Write-Output User, Group, OrganizationalUnit, Container, Computer
+        }
+        Default {
+            # TODO - other providers, check if AD is complete (for useful stuff at least).
+            $null
+        }
+    }
+    
+    $Set |
         Where-Object { $_ -like "$wordToComplete*" } |
         Sort-Object |
         ForEach-Object {
-            # TODO - use xml docs for tooltip
             New-CompletionResult $_ -ToolTip "Create $_"
         }
 }

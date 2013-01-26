@@ -492,10 +492,6 @@ filter LoadArgumentCompleters
             $backgroundResultsQueue.Enqueue([pscustomobject]@{
                 ArgumentCompleter = $true
                 Value = $registerParams})
-<<<<<<< HEAD
-                        
-=======
->>>>>>> upstream/master
         }
     }
 
