@@ -288,6 +288,7 @@ function Register-ArgumentCompleter
 #
 function Update-ArgumentCompleter
 {
+    [CmdletBinding()]
     param([switch]$AsJob)
 
     $scriptBlock = {
