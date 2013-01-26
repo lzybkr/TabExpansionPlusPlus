@@ -288,6 +288,7 @@ function Register-ArgumentCompleter
 #
 function Update-ArgumentCompleter
 {
+    [CmdletBinding()]
     param([switch]$AsJob)
 
     $scriptBlock = {
@@ -781,6 +782,7 @@ Update-TypeData -TypeData $typeData -Force
 # because searching all modules is slow and we don't want to block startup.
 $backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQueue[object]
 Update-ArgumentCompleter -AsJob
+Import-IseSnippet -Path $PSScriptRoot\Snippets
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
                     Set-TabExpansionOption, Update-ArgumentCompleter
