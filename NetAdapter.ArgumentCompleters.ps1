@@ -3,7 +3,7 @@
 #
 # .SYNOPSIS
 #
-#    Complete the -Name argument to Get-VM
+#    Complete the -Name argument to commands in NetAdapter module
 #
 function NetAdapter_AdapterNameArgumentCompletion
 {
@@ -13,7 +13,6 @@ function NetAdapter_AdapterNameArgumentCompletion
         Description = 'Complete Adapter names, for example: Get-NetAdapter -Name <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-
     NetAdapter\Get-NetAdapter -Name "$wordToComplete*" |
         Sort-Object |
         ForEach-Object {
@@ -22,6 +21,11 @@ function NetAdapter_AdapterNameArgumentCompletion
         } 
 }
 
+#
+# .SYNOPSIS
+#
+#    Complete the -InterfaceIndex argument to commands in NetAdapter module
+#
 function NetAdapter_InterfaceIndexArgumentCompletion
 {
     [ArgumentCompleter(
@@ -29,7 +33,6 @@ function NetAdapter_InterfaceIndexArgumentCompletion
         Command = { Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceIndex },
         Description = 'Complete interface indexes, for example: Get-NetAdapter -InterfaceIndex <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
 
     NetAdapter\Get-NetAdapter | where InterfaceIndex -Like "$wordToComplete*" |
         Sort-Object |
@@ -39,6 +42,11 @@ function NetAdapter_InterfaceIndexArgumentCompletion
         } 
 }
 
+#
+# .SYNOPSIS
+#
+#    Complete the -InterfaceDescription argument to commands in NetAdapter module
+#
 function NetAdapter_InterfaceDescriptionArgumentCompletion
 {
     [ArgumentCompleter(
@@ -46,7 +54,6 @@ function NetAdapter_InterfaceDescriptionArgumentCompletion
         Command = { Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceDescription },
         Description = 'Complete interface indexes, for example: Get-NetAdapter -InterfaceDescription <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
 
     NetAdapter\Get-NetAdapter -InterfaceDescription "$wordToComplete*" |
         Sort-Object |

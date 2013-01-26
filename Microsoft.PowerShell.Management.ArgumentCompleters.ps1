@@ -25,28 +25,33 @@ Complete file attributes like Hidden or ReadOnly, for example:
         }
 }
 
+#
+# .SYNOPSIS
+#
+#    Complete the -ItemType argument to New-Item
+#
 function NewItemItemTypeCompletion
 {
     [ArgumentCompleter(
-        Parameter = "ItemType",
-        Command = "New-Item",
-        Description = @"
+        Parameter = 'ItemType',
+        Command = 'New-Item',
+        Description = @'
 Complete item types (in FileSystem/ ActiveDirectory), for example:
 
     New-Item -ItemType <TAB>
-"@)]
+'@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    $cn = $fakeBoundParameter["Path"]
-    if($cn)
+    $pathProvided = $fakeBoundParameter['Path']
+    if($pathProvided)
     {
-        $Resolved = Resolve-Path -Path $cn
+        $resolvedPath = Resolve-Path -Path $pathProvided
     }
     else
     {
-        $Resolved = $PWD
+        $resolvedPath = $PWD
     }
-    $Set = switch ($Resolved.Provider.Name) {
+    $completionSet = switch ($resolvedPath.Provider.Name) {
         FileSystem {
             Write-Output File, Directory   
         }
@@ -59,7 +64,7 @@ Complete item types (in FileSystem/ ActiveDirectory), for example:
         }
     }
     
-    $Set |
+    $completionSet |
         Where-Object { $_ -like "$wordToComplete*" } |
         Sort-Object |
         ForEach-Object {
