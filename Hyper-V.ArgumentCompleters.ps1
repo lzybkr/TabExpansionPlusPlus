@@ -37,7 +37,7 @@ function HyperV_VMNameArgumentCompletion
 #
 # .SYNOPSIS
 #
-#    Complete the -Name or  -VMSwitch argument to various Hyper-V cmdlets.
+#    Complete the -Name or -VMSwitch argument to various Hyper-V cmdlets.
 #
 function HyperV_VMSwitchArgumentCompletion
 {
@@ -100,3 +100,26 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
             New-CompletionResult $_.Name
         }
 }  
+
+
+#
+# .SYNOPSIS
+#
+#    Complete vhd/vhdx files for -Path and -ParentPath parameters to *-VHD commands.
+#
+function HyperV-VHDPathArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Path',
+        # Exclude New-VHD because we don't want to suggest an existing file when creating a new one.
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName Path |
+                        Where-Object Name -ne 'New-VHD' },
+        Description = 'Completion VHD[X] files for various commands')]
+    [ArgumentCompleter(
+        Parameter = 'ParentPath',
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName ParentPath },
+        Description = 'Completion VHD[X] files for various commands')]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-CompletionWithExtension $lastWord ('.vhd', '.vhdx')
+}

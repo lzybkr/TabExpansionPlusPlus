@@ -26,3 +26,20 @@ function Storage_PhysicalDiskFriendlyNameParameterCompletion
             New-CompletionResult $name $tooltip
         }
 } 
+
+
+#
+# .SYNOPSIS
+#
+#    Complete the -ImagePath argument to Mount-DiskImage
+#
+function ImagePathArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'ImagePath',
+        Command = 'Mount-DiskImage',
+        Description = 'Complete vhds and isos for Add-Type -LiteralPath')]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-CompletionWithExtension $lastWord ('.iso', '.vhd', 'vhdx')
+}

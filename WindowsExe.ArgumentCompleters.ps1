@@ -19,11 +19,7 @@ function PowerShellExeCompletion
     {
         if ("File".StartsWith($parameterAst.ParameterName, "OrdinalIgnoreCase"))
         {
-            Get-ChildItem -Path "$wordToComplete*" |
-                Where-Object Extension -eq ".ps1" |
-                ForEach-Object {
-                    New-CompletionResult $_.FullName -ListItemText $_.Name -CompletionResultType ProviderItem
-                }
+            Get-CompletionWithExtension $wordToComplete '.ps1'
             return
         }
 

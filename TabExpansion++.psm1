@@ -149,6 +149,20 @@ function Get-CompletionPrivateData
     return $completionPrivateData[$key]
 }
 
+#############################################################################
+#
+function Get-CompletionWithExtension
+{
+    param([string]   $lastWord,
+          [string[]] $extensions)
+
+    [System.Management.Automation.CompletionCompleters]::CompleteFilename($lastWord) |
+        Where-Object {
+            # Use ListItemText because it won't be quoted, CompletionText might be
+            [System.IO.Path]::GetExtension($_.ListItemText) -in $extensions
+        }
+}
+
 #endregion Non-exported utility functions for completers
 
 #region Exported functions
