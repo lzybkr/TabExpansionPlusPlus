@@ -120,7 +120,14 @@ function NounCompletion
         Description = 'Complete nouns for: Get-Command -Noun <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    Get-Command -Noun $wordToComplete* |
+    $optionalParam = @{}
+    $module = $fakeBoundParameter['Module']
+    if ($module)
+    {
+        $optionalParam.Module = $module
+    }
+    
+    Get-Command -Noun $wordToComplete* @optionalParam |
         ForEach-Object {($_.Name -split '-',2)[1] } | Sort-Object -Unique | ForEach-Object {
             # TODO - is a decent tooltip possible?
             New-CompletionResult $_
@@ -159,5 +166,26 @@ Examples:
             ForEach-Object {
                 New-CompletionResult $_.Name ($_ | Out-String)
             }
+    }
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Completes -Version for Set-StrictMode
+#
+function SetStrictMode_VersionCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Version',
+        Command = 'Set-Strictmode',
+        Description = 'Completes Version parameter for Set-StrictMode, for example:  Set-StrictMode -Version <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    '1.0', '2.0', '3.0', 'latest' | where { $_ -like "$wordToComplete*" } | 
+    ForEach-Object {
+        New-CompletionResult $_ "Version $_"
     }
 }

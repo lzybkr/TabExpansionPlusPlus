@@ -100,3 +100,32 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
             New-CompletionResult $_.Name
         }
 }  
+
+
+#
+# .SYNOPSIS
+#
+#     Tab-complete for -VMNetworAdapter -Name when -VMName is provided.
+#
+function HyperV_VMNetworkAdapterNameArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VMNetworkAdapter -ParameterName Name |
+            where Verb -NE Add
+        },
+        Description = 'Tab completes names of VM network adapaters, for example:  Get-VMNetworkAdapter -VMName Foo -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $vm = $fakeBoundParameter['VMName']
+    if ($vm)
+    {
+        Hyper-V\Get-VMNetworkAdapter -VMName $vm -Name "$wordToComplete*" |
+            Sort-Object -Property Name |
+            ForEach-Object {
+                $toolTip = "MAC: {0} Connected to: {1}" -f $_.MacAddress, $_.SwitchName
+                New-CompletionResult $_.Name $toolTip
+            }
+    }
+}
