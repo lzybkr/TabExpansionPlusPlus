@@ -64,3 +64,34 @@ Complete counter sets for the Get-Counter cmdlet, optionally on a remote machine
             New-CompletionResult $_.CounterSetName $tooltip
         }
 } 
+
+
+#
+# .SYNOPSIS
+#
+#     Completes names of the logs for Get-WinEvent cmdlet.
+#
+function GetWinEvent_LogNameCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'LogName',
+        Command = 'Get-WinEvent',
+        Description = 'Completes names for the logs, for example:  Get-WinEvent -LogName <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $optionalCn = @{}
+    $cn = $fakeBoundParameter['ComputerName']
+    if ($cn) 
+    {
+        $optionalCn.ComputerName = $cn
+    }
+    
+    Get-WinEvent -ListLog "$wordToComplete*" -Force @optionalCn |
+        where { $_.IsEnabled } |
+        Sort-Object -Property LogName |
+        ForEach-Object {
+            $toolTip = "Log $($_.LogName): $($_.RecordCount) entries"
+            New-CompletionResult $_.LogName $toolTip
+        }
+}
