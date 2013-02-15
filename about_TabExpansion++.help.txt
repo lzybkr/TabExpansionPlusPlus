@@ -228,6 +228,31 @@ LONG DESCRIPTION
     See the function InitClassIdTable in the module TabExpansion++ for an
     example of how to use this attribute.
 
+  COMPLETERS FOR NATIVE COMMAND TREES
+
+    Some native commands accept a variety of arguments depending on previously
+    specified arguments.  Netsh.exe is a great example.  One quick example - 
+    
+        netsh firewall <TAB>
+
+    Here one would expect to complete on of the valid commands that are valid
+    in the firewall context such as add, delete, dump, help, set, or show.
+
+    For well structured commands, you can build a representation of the command
+    structure once, cache the structure, then pass it to
+    Get-CommandTreeCompletion.
+
+    You can build this structure using the command New-CommandTree.  Most often
+    you'll just specify a command and possibly pass a script block that specifies
+    sub-commands.  Occasionally you may want completions that are dynamic, e.g.
+
+        net STOP <TAB>
+
+    should only complete services that are started.  You can do this by specifing
+    a sub-command that is a script block.  See the function NetExeCompletion in
+    the module TabExpansion++ for an example of all of the capabilities of
+    New-CommandTree.
+
   DEBUGGING A CUSTOM COMPLETER
 
     Debugging a custom completer can be a little confusing.  One simple way
@@ -274,6 +299,19 @@ LONG DESCRIPTION
 
         This function is used to retrived previously cached data that
 	helps speed up a completer.
+
+      New-CommandTree
+
+        This function is used to build a data structure that is used by
+        Get-CommandTreeCompletion.  You can specify sub-commands,
+        arguments (which do not change the command context), and script
+        blocks (which provide for dynamic completion, and also do not
+        change the command context).
+
+      Get-CommandTreeCompletion
+
+        This function completes command arguments based on the context
+        from the command line and command tree pased in.
 
 
 POWERSHELL COMPATIBILITY
@@ -382,6 +420,43 @@ ATTRIBUTES
 
         Key is a required positional argument.  It specifies the key that
 	will be used to retrieve the data with Get-CompletionPrivateData.
+
+TYPES
+
+  NativeCommandTreeNode
+
+    The function Get-CommandTreeCompletion takes an array of this type to
+    assist in completing command arguments to native commands.
+
+    This type has 3 essential forms:
+
+      * Subcommand 
+      
+          This form can have a collection of children that are also of type
+          NativeCommandTreeNode.  This form is used both as a valid completion
+          and to navigate the command tree to it's children.
+
+      * Argument
+
+          This form is used to specify valid completions that do not change
+          the command context.  When Get-CommandTreeCompletion analyzes the
+          command line, it will ignore items of this type if they are not part
+          of the argument being completed.
+
+      * Script block
+
+          This form is used dynamic completions.  If this form is found in
+          when Get-CommandTreeCompletion has finished analyzing the command
+          line and set the appropriate context, the script block will be
+          invoked to perform the completion.  The arguments are:
+
+              param($wordToComplete,
+                    $commandAst)
+    
+    The function New-CommandTree can be used to simplify constructing the command
+    tree.  TabExpansion++ does not define an alias for this function, but it is
+    suggested to define an alias locally in your completer function, for examples
+    see NetExeCompletion or NetshExeCompletion in WindowsExe.ArgumentCompleters.ps1.
 
 FEEDBACK
 

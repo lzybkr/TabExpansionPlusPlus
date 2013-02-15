@@ -163,6 +163,116 @@ function Get-CompletionWithExtension
         }
 }
 
+#############################################################################
+#
+function New-CommandTree
+{
+    [CmdletBinding(DefaultParameterSetName='Default')]
+    param(
+        [Parameter(Position=0, Mandatory, ParameterSetName='Default')]
+        [Parameter(Position=0, Mandatory, ParameterSetName='Argument')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Completion,
+
+        [Parameter(Position=1, Mandatory, ParameterSetName='Default')]
+        [Parameter(Position=1, Mandatory, ParameterSetName='Argument')]
+        [string]
+        $Tooltip,
+
+        [Parameter(ParameterSetName='Argument')]
+        [switch]
+        $Argument,
+
+        [Parameter(Position=2, ParameterSetName='Default')]
+        [Parameter(Position=1, ParameterSetName='ScriptBlockSet')]
+        [scriptblock]
+        $SubCommands,
+
+        [Parameter(Position=0, Mandatory, ParameterSetName='ScriptBlockSet')]
+        [scriptblock]
+        $CompletionGenerator
+    )
+
+    $actualSubCommands = $null
+    if ($null -ne $SubCommands)
+    {
+        $actualSubCommands = [NativeCommandTreeNode[]](& $SubCommands)
+    }
+
+    switch ($PSCmdlet.ParameterSetName)
+    {
+        'Default' {
+            New-Object NativeCommandTreeNode $Completion,$Tooltip,$actualSubCommands
+            break
+        }
+        'Argument' {
+            New-Object NativeCommandTreeNode $Completion,$Tooltip,$true
+        }
+        'ScriptBlockSet' {
+            New-Object NativeCommandTreeNode $CompletionGenerator,$actualSubCommands
+            break
+        }
+    }
+}
+
+#############################################################################
+#
+function Get-CommandTreeCompletion
+{
+    param($wordToComplete, $commandAst, [NativeCommandTreeNode[]]$CommandTree)
+
+    $commandElements = $commandAst.CommandElements
+
+    # Skip the first command element - it's the command name
+    # Iterate through the remaining elements, stopping early
+    # if we find the element that matches $wordToComplete.
+    for ($i = 1; $i -lt $commandElements.Count; $i++)
+    {
+        if (!($commandElements[$i] -is [System.Management.Automation.Language.StringConstantExpressionAst]))
+        {
+            # Ignore arguments that are expressions.  In some rare cases this
+            # could cause strange completions because the context is incorrect, e.g.:
+            #    $c = 'advfirewall'
+            #    netsh $c firewall
+            # Here we would be in advfirewall firewall context, but we'd complete as
+            # though we were in firewall context.
+            continue
+        }
+
+        if ($commandElements[$i].Value -eq $wordToComplete)
+        {
+            $CommandTree = $CommandTree |
+                Where-Object { $_.Command -like "$wordToComplete*" -or $_.CompletionGenerator -ne $null }
+            break
+        }
+
+        foreach ($subCommand in $CommandTree)
+        {
+            if ($subCommand.Command -eq $commandElements[$i].Value)
+            {
+                if (!$subCommand.Argument)
+                {
+                    $CommandTree = $subCommand.SubCommands
+                }
+                break
+            }
+        }
+    }
+
+    $CommandTree | ForEach-Object {
+        if ($_.Command)
+        {
+            $toolTip = if ($_.Tooltip) { $_.Tooltip } else { $_.Command }
+            New-CompletionResult -CompletionText $_.Command -ToolTip $toolTip
+        }
+        else
+        {
+            & $_.CompletionGenerator $wordToComplete $commandAst
+        }
+    }
+}
+
 #endregion Non-exported utility functions for completers
 
 #region Exported functions
@@ -742,6 +852,8 @@ function global:TabExpansion2
 
 Add-Type @"
 using System;
+using System.Management.Automation;
+using System.Collections.Generic;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class ArgumentCompleterAttribute : Attribute
@@ -772,6 +884,46 @@ public class InitializeArgumentCompleterAttribute : Attribute
     }
 
     public string Key { get; set; }
+}
+
+public class NativeCommandTreeNode
+{
+    private NativeCommandTreeNode(NativeCommandTreeNode[] subCommands)
+    {
+        SubCommands = subCommands;
+    }
+
+    public NativeCommandTreeNode(string command, NativeCommandTreeNode[] subCommands)
+        : this(command, null, subCommands)
+    {
+    }
+
+    public NativeCommandTreeNode(string command, string tooltip, NativeCommandTreeNode[] subCommands)
+        : this(subCommands)
+    {
+        this.Command = command;
+        this.Tooltip = tooltip;
+    }
+
+    public NativeCommandTreeNode(string command, string tooltip, bool argument)
+        : this(null)
+    {
+        this.Command = command;
+        this.Tooltip = tooltip;
+        this.Argument = true;
+    }
+
+    public NativeCommandTreeNode(ScriptBlock completionGenerator, NativeCommandTreeNode[] subCommands)
+        : this(subCommands)
+    {
+        this.CompletionGenerator = completionGenerator;
+    }
+
+    public string Command { get; private set; }
+    public string Tooltip { get; private set; }
+    public bool Argument { get; private set; }
+    public ScriptBlock CompletionGenerator { get; private set; }
+    public NativeCommandTreeNode[] SubCommands { get; private set; }
 }
 "@
 
