@@ -43,12 +43,16 @@ Import-Module TabExpansion++
 
 Installing
 ----------
-1. Make sure the execution policy (Get-ExecutionPolicy) allows scripts to run.
-2. Make a directory for the module, e.g.:
+To install in your personal modules folder (e.g. ~\Documents\WindowsPowerShell\Modules), run:
+
 ```powershell
-mkdir ~\Documents\WindowsPowerShell\Modules\TabExpansion++
+iex (new-object System.Net.WebClient).DownloadString('https://raw.github.com/lzybkr/TabExpansionPlusPlus/master/Install.ps1')
 ```
-3. Copy the files from this module to the directory you just created, e.g:
+
+If you want to install elsewhere, you can download Install.ps1 (using the URL above) and run it, passing in the directory you want to install.
+
+If you have PsGet, you can run:
+
 ```powershell
-cp *.ps*1,*.txt ~\Documents\WindowsPowerShell\Modules\TabExpansion++
+Install-Module -ModuleUrl https://github.com/lzybkr/TabExpansionPlusPlus/zipball/master/ -ModuleName TabExpansion++ -Type ZIP
 ```
