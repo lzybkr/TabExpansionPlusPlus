@@ -260,15 +260,18 @@ function Get-CommandTreeCompletion
         }
     }
 
-    $CommandTree | ForEach-Object {
-        if ($_.Command)
-        {
-            $toolTip = if ($_.Tooltip) { $_.Tooltip } else { $_.Command }
-            New-CompletionResult -CompletionText $_.Command -ToolTip $toolTip
-        }
-        else
-        {
-            & $_.CompletionGenerator $wordToComplete $commandAst
+    if ($null -ne $CommandTree)
+    {
+        $CommandTree | ForEach-Object {
+            if ($_.Command)
+            {
+                $toolTip = if ($_.Tooltip) { $_.Tooltip } else { $_.Command }
+                New-CompletionResult -CompletionText $_.Command -ToolTip $toolTip
+            }
+            else
+            {
+                & $_.CompletionGenerator $wordToComplete $commandAst
+            }
         }
     }
 }
