@@ -382,6 +382,14 @@ function Register-ArgumentCompleter
         $Description = if ($fnDefn -ne $null) { $fnDefn.Name } else { "" }
     }
 
+    if ($MyInvocation.ScriptName -ne (& { $MyInvocation.ScriptName }))
+    {
+        # Make an unbound copy of the script block so it has access to TabExpansion++ when invoked.
+        # We can skip this step if we created the script block (Register-ArgumentCompleter was
+        # called internally).
+        $ScriptBlock = $ScriptBlock.Ast.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
+    }
+
     foreach ($command in $CommandName)
     {
         if ($command -and $ParameterName)
