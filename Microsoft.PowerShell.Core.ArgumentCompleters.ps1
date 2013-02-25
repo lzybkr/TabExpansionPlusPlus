@@ -189,3 +189,61 @@ function SetStrictMode_VersionCompleter
         New-CompletionResult $_ "Version $_"
     }
 }
+
+
+#
+# .SYNOPSIS
+#
+#     Tab-completes names of help topics, also conceptual (about_*).
+#
+function HelpNameCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = ('help','Get-Help'),
+        Description = 'Tab completes names of help articles, for example:  Get-Help -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    # First - commands... but we need to leave All and Application out...
+    $commands = @([System.Management.Automation.CompletionCompleters]::CompleteCommand(
+        $wordToComplete,
+        '*', # Any module
+        $([enum]::GetNames(
+            [System.Management.Automation.CommandTypes]
+        ) | where { $_ -notin 'All', 'Application' })
+    ))
+    # Than - about_*.
+    # About for main PS first...
+    $psHomeHelpFiles = @(Get-ChildItem -Path $PSHOME\*\*.help.txt)
+    # And for any other modules...
+    $modulesHelpFiles = @(Get-Module | where ModuleBase -ne $PSHOME) |
+        Get-ChildItem -Path { $_.ModuleBase } -Filter *.help.txt -Recurse
+    $abouts = $psHomeHelpFiles + $modulesHelpFiles | 
+        Where-Object { $_.Name -like "$wordToComplete*" } |
+        Sort-Object -Property Name |
+        ForEach-Object {
+            $text = $_.Name -replace '\.help\.txt'
+            if ((Get-Content -Raw -Path $_.FullName) -replace '\s+', ' ' -match 
+                'SHORT DESCRIPTION ([\s\S]*?) LONG') {
+                $toolTip = $Matches[1]
+            } else {
+                $toolTip = $text
+            }
+            New-CompletionResult $text $toolTip
+        }
+    # And last but not least - providers
+    $providers = Get-PSProvider | Where-Object { 
+        $_.Name -like "$wordToComplete*" -and 
+        $_.HelpFile 
+    } |
+    Sort-Object -Property Name |
+    ForEach-Object {
+        $toolTip = "Name: {0} Drives: {1}" -f
+            $_.Name,
+            $($_.Drives -join ", ")
+        New-CompletionResult $_.Name $toolTip
+    }
+    # combine all to get mix of different types rather than FIFO with providers/ abouts at the end...
+    $commands + $abouts + $providers | Sort-Object -Property ListItemText
+}
