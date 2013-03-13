@@ -128,3 +128,45 @@ function OutPrinterNameArgumentCompletion
             New-CompletionResult $_.Name $_.Location
         }
 }
+
+
+#
+# .SYNOPSIS
+#
+#     Complete arguments that take ps1xml files for the Update-[Type|Format]Data commands.
+#
+function AddTypePathArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Path',
+        Command = 'Add-Type',
+        Description = 'Complete source code and dlls for Add-Type -Path')]
+    [ArgumentCompleter(
+        Parameter = 'LiteralPath',
+        Command = 'Add-Type',
+        Description = 'Complete source code and dlls for Add-Type -LiteralPath')]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-CompletionWithExtension $lastWord ('.dll', '.cs', '.vb', '.js')
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Complete arguments that take ps1xml files for the Update-[Type|Format]Data commands.
+#
+function Ps1xmlPathArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'AppendPath',
+        Command = ('Update-TypeData', 'Update-FormatData'),
+        Description = 'Complete ps1xml files for -AppendPath')]
+    [ArgumentCompleter(
+        Parameter = 'PrependPath',
+        Command = ('Update-TypeData', 'Update-FormatData'),
+        Description = 'Complete ps1xml files for -PrependPath')]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-CompletionWithExtension $lastWord '.ps1xml'
+}

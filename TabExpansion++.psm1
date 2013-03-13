@@ -149,6 +149,133 @@ function Get-CompletionPrivateData
     return $completionPrivateData[$key]
 }
 
+#############################################################################
+#
+function Get-CompletionWithExtension
+{
+    param([string]   $lastWord,
+          [string[]] $extensions)
+
+    [System.Management.Automation.CompletionCompleters]::CompleteFilename($lastWord) |
+        Where-Object {
+            # Use ListItemText because it won't be quoted, CompletionText might be
+            [System.IO.Path]::GetExtension($_.ListItemText) -in $extensions
+        }
+}
+
+#############################################################################
+#
+function New-CommandTree
+{
+    [CmdletBinding(DefaultParameterSetName='Default')]
+    param(
+        [Parameter(Position=0, Mandatory, ParameterSetName='Default')]
+        [Parameter(Position=0, Mandatory, ParameterSetName='Argument')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Completion,
+
+        [Parameter(Position=1, Mandatory, ParameterSetName='Default')]
+        [Parameter(Position=1, Mandatory, ParameterSetName='Argument')]
+        [string]
+        $Tooltip,
+
+        [Parameter(ParameterSetName='Argument')]
+        [switch]
+        $Argument,
+
+        [Parameter(Position=2, ParameterSetName='Default')]
+        [Parameter(Position=1, ParameterSetName='ScriptBlockSet')]
+        [scriptblock]
+        $SubCommands,
+
+        [Parameter(Position=0, Mandatory, ParameterSetName='ScriptBlockSet')]
+        [scriptblock]
+        $CompletionGenerator
+    )
+
+    $actualSubCommands = $null
+    if ($null -ne $SubCommands)
+    {
+        $actualSubCommands = [NativeCommandTreeNode[]](& $SubCommands)
+    }
+
+    switch ($PSCmdlet.ParameterSetName)
+    {
+        'Default' {
+            New-Object NativeCommandTreeNode $Completion,$Tooltip,$actualSubCommands
+            break
+        }
+        'Argument' {
+            New-Object NativeCommandTreeNode $Completion,$Tooltip,$true
+        }
+        'ScriptBlockSet' {
+            New-Object NativeCommandTreeNode $CompletionGenerator,$actualSubCommands
+            break
+        }
+    }
+}
+
+#############################################################################
+#
+function Get-CommandTreeCompletion
+{
+    param($wordToComplete, $commandAst, [NativeCommandTreeNode[]]$CommandTree)
+
+    $commandElements = $commandAst.CommandElements
+
+    # Skip the first command element - it's the command name
+    # Iterate through the remaining elements, stopping early
+    # if we find the element that matches $wordToComplete.
+    for ($i = 1; $i -lt $commandElements.Count; $i++)
+    {
+        if (!($commandElements[$i] -is [System.Management.Automation.Language.StringConstantExpressionAst]))
+        {
+            # Ignore arguments that are expressions.  In some rare cases this
+            # could cause strange completions because the context is incorrect, e.g.:
+            #    $c = 'advfirewall'
+            #    netsh $c firewall
+            # Here we would be in advfirewall firewall context, but we'd complete as
+            # though we were in firewall context.
+            continue
+        }
+
+        if ($commandElements[$i].Value -eq $wordToComplete)
+        {
+            $CommandTree = $CommandTree |
+                Where-Object { $_.Command -like "$wordToComplete*" -or $_.CompletionGenerator -ne $null }
+            break
+        }
+
+        foreach ($subCommand in $CommandTree)
+        {
+            if ($subCommand.Command -eq $commandElements[$i].Value)
+            {
+                if (!$subCommand.Argument)
+                {
+                    $CommandTree = $subCommand.SubCommands
+                }
+                break
+            }
+        }
+    }
+
+    if ($null -ne $CommandTree)
+    {
+        $CommandTree | ForEach-Object {
+            if ($_.Command)
+            {
+                $toolTip = if ($_.Tooltip) { $_.Tooltip } else { $_.Command }
+                New-CompletionResult -CompletionText $_.Command -ToolTip $toolTip
+            }
+            else
+            {
+                & $_.CompletionGenerator $wordToComplete $commandAst
+            }
+        }
+    }
+}
+
 #endregion Non-exported utility functions for completers
 
 #region Exported functions
@@ -255,6 +382,14 @@ function Register-ArgumentCompleter
         $Description = if ($fnDefn -ne $null) { $fnDefn.Name } else { "" }
     }
 
+    if ($MyInvocation.ScriptName -ne (& { $MyInvocation.ScriptName }))
+    {
+        # Make an unbound copy of the script block so it has access to TabExpansion++ when invoked.
+        # We can skip this step if we created the script block (Register-ArgumentCompleter was
+        # called internally).
+        $ScriptBlock = $ScriptBlock.Ast.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
+    }
+
     foreach ($command in $CommandName)
     {
         if ($command -and $ParameterName)
@@ -288,6 +423,7 @@ function Register-ArgumentCompleter
 #
 function Update-ArgumentCompleter
 {
+    [CmdletBinding()]
     param([switch]$AsJob)
 
     $scriptBlock = {
@@ -455,41 +591,43 @@ filter LoadArgumentCompleters
     ForEach-FunctionWithAttribute $paramAsts ([ArgumentCompleterAttribute]) {
         param($scriptBlock)
 
-        $registerParams = @{
-            ScriptBlock = $scriptBlock
-        }
-
         # Multiple ArgumentCompleter attributes are supported
         $attrInsts = $scriptBlock.Attributes | Where-Object { $_ -is [ArgumentCompleterAttribute] }
         foreach ($attrInst in $attrInsts)
         {
+            $registerParams = @{
+                ScriptBlock = $scriptBlock
+            }
+
             # Review - use the function name as the description if no description is provided?
             if ($attrInst.Description)
             {
                 $registerParams.Description = $attrInst.Description
             }
-            foreach ($c in $attrInst.Command)
-            {                
-                if ($c -is [ScriptBlock])
-                {
-                    $registerParams.CommandName = & $c | % { [string]$_ }
-                }
-                else
-                {
-                    $registerParams.CommandName = [string]$c
-                }
-                if ($attrInst.Native)
-                {
-                    $registerParams.Native = $true
-                }
-                elseif ($null -ne $registerParams.CommandName)
-                {
-                    $registerParams.ParameterName = $attrInst.Parameter
-                }
-                $backgroundResultsQueue.Enqueue([pscustomobject]@{
-                    ArgumentCompleter = $true
-                    Value = $registerParams})
-            }            
+
+            $registerParams.CommandName =
+                [string[]]($attrInst.Command | ForEach-Object {
+                    if ($_ -is [ScriptBlock])
+                    {
+                        & $_
+                    }
+                    else
+                    {
+                        $_
+                    }
+                })
+
+            if ($attrInst.Native)
+            {
+                $registerParams.Native = $true
+            }
+            elseif ($null -ne $registerParams.CommandName)
+            {
+                $registerParams.ParameterName = $attrInst.Parameter
+            }
+            $backgroundResultsQueue.Enqueue([pscustomobject]@{
+                ArgumentCompleter = $true
+                Value = $registerParams})
         }
     }
 
@@ -524,10 +662,6 @@ function Flush-BackgroundResultsQueue
         $parameters = $item.Value
         if ($item.ArgumentCompleter)
         {
-            if ($null -eq $parameters.CommandName)
-            {
-                if ($global:foo -eq 'foo') { $global:foo = $null; $host.EnterNestedPrompt() }
-            }
             Register-ArgumentCompleter @parameters 
         }
         elseif ($item.InitializationData)
@@ -598,7 +732,7 @@ function TryAttributeArgumentCompletion
                 ForEach-Object {
                     $propType = [Microsoft.PowerShell.ToStringCodeMethods]::Type($_.PropertyType)
                     $propName = $_.Name
-                    New-CompletionResult $propName -ToolTip "$proptType $propName" -CompletionResultType Property
+                    New-CompletionResult $propName -ToolTip "$propType $propName" -CompletionResultType Property
                 }
 
             return [PSCustomObject]@{
@@ -687,6 +821,12 @@ function global:TabExpansion2
         {
             $results.ReplacementIndex = $attributeResults.ReplacementIndex
             $results.ReplacementLength = $attributeResults.ReplacementLength
+            if ($results.CompletionMatches.IsReadOnly)
+            {
+                # Workaround where PowerShell returns a readonly collection that we need to add to.
+                $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
+                $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
+            }
             $attributeResults.Results | ForEach-Object {
                 $results.CompletionMatches.Add($_) }
         }
@@ -723,6 +863,8 @@ function global:TabExpansion2
 
 Add-Type @"
 using System;
+using System.Management.Automation;
+using System.Collections.Generic;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class ArgumentCompleterAttribute : Attribute
@@ -753,6 +895,46 @@ public class InitializeArgumentCompleterAttribute : Attribute
     }
 
     public string Key { get; set; }
+}
+
+public class NativeCommandTreeNode
+{
+    private NativeCommandTreeNode(NativeCommandTreeNode[] subCommands)
+    {
+        SubCommands = subCommands;
+    }
+
+    public NativeCommandTreeNode(string command, NativeCommandTreeNode[] subCommands)
+        : this(command, null, subCommands)
+    {
+    }
+
+    public NativeCommandTreeNode(string command, string tooltip, NativeCommandTreeNode[] subCommands)
+        : this(subCommands)
+    {
+        this.Command = command;
+        this.Tooltip = tooltip;
+    }
+
+    public NativeCommandTreeNode(string command, string tooltip, bool argument)
+        : this(null)
+    {
+        this.Command = command;
+        this.Tooltip = tooltip;
+        this.Argument = true;
+    }
+
+    public NativeCommandTreeNode(ScriptBlock completionGenerator, NativeCommandTreeNode[] subCommands)
+        : this(subCommands)
+    {
+        this.CompletionGenerator = completionGenerator;
+    }
+
+    public string Command { get; private set; }
+    public string Tooltip { get; private set; }
+    public bool Argument { get; private set; }
+    public ScriptBlock CompletionGenerator { get; private set; }
+    public NativeCommandTreeNode[] SubCommands { get; private set; }
 }
 "@
 

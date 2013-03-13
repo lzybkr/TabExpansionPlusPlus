@@ -1,0 +1,111 @@
+﻿<?xml version='1.0' encoding='utf-8' ?>
+<Snippets  xmlns='http://schemas.microsoft.com/PowerShell/Snippets'>
+    <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: AgrumentCompleter - PowerShell commands</Title>
+            <Description>Adding function with [ArgumentCompleter()] with all the goodies. Use for PowerShell commands.</Description>
+            <Author>Bartosz Bielawski</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+
+        <Code>
+            <Script Language='PowerShell' CaretOffset='23'>
+                <![CDATA[#
+# .SYNOPSIS
+#
+#     Description of added completer
+#
+function 
+{
+    [ArgumentCompleter(
+        Parameter = 'ParameterName',
+        Command = ('List', 'of', 'Commands', 'or', 'ScriptBlock'),
+        Description = 'Your description, with example:  Get-Foo -Bar <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+}
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+    <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: AgrumentCompleter - native commands</Title>
+            <Description>Adding function with [ArgumentCompleter()] with all the goodies. Use for native commands.</Description>
+            <Author>Bartosz Bielawski</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+
+        <Code>
+            <Script Language='PowerShell' CaretOffset='23'>
+                <![CDATA[#
+# .SYNOPSIS
+#
+#     Description of added completer
+#
+function 
+{
+    [ArgumentCompleter(
+        Native,
+        Command = 'YourCommand',
+        Description = 'Completes parameters to YourCommand.exe'
+    )]
+    param($wordToComplete, $commandAst)
+
+}
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+        <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: AgrumentCompleter paired with initialization</Title>
+            <Description>Adding two functions: one with [InitializeArgumentCompleter()] and other with [ArgumentCompleter()] paired with it.</Description>
+            <Author>Bartosz Bielawski</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+
+        <Code>
+            <Script Language='PowerShell' CaretOffset='5'>
+                <![CDATA[#
+# Reason to use initialization...
+#
+function 
+{
+    [InitializeArgumentCompleter('Command_Parameter')]
+    param()
+
+    return $privateData
+}
+
+#
+# .SYNOPSIS
+#
+#     Information about completion
+#
+function 
+{
+    [ArgumentCompleter(
+        Parameter = 'ParameterName',
+        Command = 'CommandName',
+        Description = 'Description with: example')]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $privateData = Get-CompletionPrivateData -Key Command_Parameter
+    # Use $privateData in generating completion results
+
+}
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+
+</Snippets>
+

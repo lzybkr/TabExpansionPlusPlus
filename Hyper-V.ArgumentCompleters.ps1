@@ -37,7 +37,7 @@ function HyperV_VMNameArgumentCompletion
 #
 # .SYNOPSIS
 #
-#    Complete the -Name or  -VMSwitch argument to various Hyper-V cmdlets.
+#    Complete the -Name or -VMSwitch argument to various Hyper-V cmdlets.
 #
 function HyperV_VMSwitchArgumentCompletion
 {
@@ -100,3 +100,55 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
             New-CompletionResult $_.Name
         }
 }  
+
+
+#
+# .SYNOPSIS
+#
+#    Complete vhd/vhdx files for -Path and -ParentPath parameters to *-VHD commands.
+#
+function HyperV-VHDPathArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Path',
+        # Exclude New-VHD because we don't want to suggest an existing file when creating a new one.
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName Path |
+                        Where-Object Name -ne 'New-VHD' },
+        Description = 'Completion VHD[X] files for various commands')]
+    [ArgumentCompleter(
+        Parameter = 'ParentPath',
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName ParentPath },
+        Description = 'Completion VHD[X] files for various commands')]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-CompletionWithExtension $lastWord ('.vhd', '.vhdx')
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Tab-complete for -VMNetworAdapter -Name when -VMName is provided.
+#
+function HyperV_VMNetworkAdapterNameArgumentCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VMNetworkAdapter -ParameterName Name |
+            where Verb -NE Add
+        },
+        Description = 'Tab completes names of VM network adapaters, for example:  Get-VMNetworkAdapter -VMName Foo -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $vm = $fakeBoundParameter['VMName']
+    if ($vm)
+    {
+        Hyper-V\Get-VMNetworkAdapter -VMName $vm -Name "$wordToComplete*" |
+            Sort-Object -Property Name |
+            ForEach-Object {
+                $toolTip = "MAC: {0} Connected to: {1}" -f $_.MacAddress, $_.SwitchName
+                New-CompletionResult $_.Name $toolTip
+            }
+    }
+}
