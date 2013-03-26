@@ -674,16 +674,6 @@ function Flush-BackgroundResultsQueue
     while ($backgroundResultsQueue.TryDequeue([ref]$item))
     {
         $parameters = $item.Value
-        if( !($parameters[ 'CommandName' ]) )
-        {
-            # This can happen, for example, if you have a completer where the
-            # applicable 'Command' is determined by running a script block, and
-            # the script block returns no results. (For instance, "Command = {
-            # Get-CommandWithParameter -Module Hyper-V ... }", and you don't
-            # have the Hyper-V module installed.)
-            continue
-        }
-
         if ($item.ArgumentCompleter)
         {
             Register-ArgumentCompleter @parameters 
