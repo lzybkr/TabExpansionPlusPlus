@@ -605,23 +605,37 @@ filter LoadArgumentCompleters
                 $registerParams.Description = $attrInst.Description
             }
 
-            $registerParams.CommandName =
-                [string[]]($attrInst.Command | ForEach-Object {
-                    if ($_ -is [ScriptBlock])
-                    {
-                        & $_
-                    }
-                    else
-                    {
-                        $_
-                    }
-                })
+            if ($null -ne $attrInst.Command)
+            {
+                $registerParams.CommandName =
+                    [string[]]($attrInst.Command | ForEach-Object {
+                        if ($_ -is [ScriptBlock])
+                        {
+                            & $_
+                        }
+                        else
+                        {
+                            $_
+                        }
+                    })
+                if ($null -eq $registerParams.CommandName)
+                {
+                    # TODO: It might be useful to remember this function in a list
+                    # and report a warning somehow, e.g. Get-ArgumentCompleter -Verbose
+                    continue
+                }
+            }
 
             if ($attrInst.Native)
             {
                 $registerParams.Native = $true
             }
-            elseif ($null -ne $registerParams.CommandName)
+            elseif ($null -eq $attrInst.Parameter)
+            {
+                # TODO: should report this as an error somehow
+                continue
+            }
+            else
             {
                 $registerParams.ParameterName = $attrInst.Parameter
             }
