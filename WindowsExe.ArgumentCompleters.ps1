@@ -105,7 +105,7 @@ function NetExeCompletion
 
                     Get-Service |
                         Where-Object {
-                            $_.Status -eq [System.SericeProcess.ServiceControllerStatus]::Paused -and
+                            $_.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Paused -and
                             ($_.Name -like "$wordToComplete*" -or $_.DisplayName -like "$wordToComplete*") } |
                         Sort-Object DisplayName |
                         ForEach-Object {
@@ -202,7 +202,7 @@ function NetExeCompletion
 
                     Get-Service |
                         Where-Object {
-                            $_.Status -eq [System.SericeProcess.ServiceControllerStatus]::Stopped -and
+                            $_.Status -eq [System.ServiceProcess.ServiceControllerStatus]::Stopped -and
                             ($_.Name -like "$wordToComplete*" -or $_.DisplayName -like "$wordToComplete*") } |
                         Sort-Object DisplayName |
                         ForEach-Object {

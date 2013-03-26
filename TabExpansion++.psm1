@@ -260,15 +260,18 @@ function Get-CommandTreeCompletion
         }
     }
 
-    $CommandTree | ForEach-Object {
-        if ($_.Command)
-        {
-            $toolTip = if ($_.Tooltip) { $_.Tooltip } else { $_.Command }
-            New-CompletionResult -CompletionText $_.Command -ToolTip $toolTip
-        }
-        else
-        {
-            & $_.CompletionGenerator $wordToComplete $commandAst
+    if ($null -ne $CommandTree)
+    {
+        $CommandTree | ForEach-Object {
+            if ($_.Command)
+            {
+                $toolTip = if ($_.Tooltip) { $_.Tooltip } else { $_.Command }
+                New-CompletionResult -CompletionText $_.Command -ToolTip $toolTip
+            }
+            else
+            {
+                & $_.CompletionGenerator $wordToComplete $commandAst
+            }
         }
     }
 }
@@ -377,6 +380,14 @@ function Register-ArgumentCompleter
         # See if the script block is really a function, if so, use the function name.
         $fnDefn = $ScriptBlock.Ast.Parent -as [System.Management.Automation.Language.FunctionDefinitionAst]
         $Description = if ($fnDefn -ne $null) { $fnDefn.Name } else { "" }
+    }
+
+    if ($MyInvocation.ScriptName -ne (& { $MyInvocation.ScriptName }))
+    {
+        # Make an unbound copy of the script block so it has access to TabExpansion++ when invoked.
+        # We can skip this step if we created the script block (Register-ArgumentCompleter was
+        # called internally).
+        $ScriptBlock = $ScriptBlock.Ast.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
     }
 
     foreach ($command in $CommandName)
@@ -594,23 +605,37 @@ filter LoadArgumentCompleters
                 $registerParams.Description = $attrInst.Description
             }
 
-            $registerParams.CommandName =
-                [string[]]($attrInst.Command | ForEach-Object {
-                    if ($_ -is [ScriptBlock])
-                    {
-                        & $_
-                    }
-                    else
-                    {
-                        $_
-                    }
-                })
+            if ($null -ne $attrInst.Command)
+            {
+                $registerParams.CommandName =
+                    [string[]]($attrInst.Command | ForEach-Object {
+                        if ($_ -is [ScriptBlock])
+                        {
+                            & $_
+                        }
+                        else
+                        {
+                            $_
+                        }
+                    })
+                if ($null -eq $registerParams.CommandName)
+                {
+                    # TODO: It might be useful to remember this function in a list
+                    # and report a warning somehow, e.g. Get-ArgumentCompleter -Verbose
+                    continue
+                }
+            }
 
             if ($attrInst.Native)
             {
                 $registerParams.Native = $true
             }
-            elseif ($null -ne $registerParams.CommandName)
+            elseif ($null -eq $attrInst.Parameter)
+            {
+                # TODO: should report this as an error somehow
+                continue
+            }
+            else
             {
                 $registerParams.ParameterName = $attrInst.Parameter
             }
