@@ -529,12 +529,16 @@ function Get-ArgumentCompleter
 function Set-TabExpansionOption
 {
     param(
-        [ValidateSet('ExcludeHiddenFiles', 'RelativePaths', 'LiteralPaths', 'IgnoreHiddenShares')]
+        [ValidateSet('ExcludeHiddenFiles',
+                     'RelativePaths',
+                     'LiteralPaths',
+                     'IgnoreHiddenShares',
+                     'AppendBackslash')]
         [string]
         $Option,
 
         [object]
-        $Value)
+        $Value = $true)
     
     $script:options[$option] = $value
 }
@@ -862,6 +866,22 @@ function global:TabExpansion2
                     # If Get-Item w/o -Force fails, it is probably hidden, so exclude the result
                     $null = $results.CompletionMatches.Remove($result)
                 }
+            }
+        }
+    }
+    if ($options.AppendBackslash -and
+        $results.CompletionMatches.ResultType -contains [System.Management.Automation.CompletionResultType]::ProviderContainer)
+    {
+        foreach ($result in @($results.CompletionMatches))
+        {
+            if ($result.ResultType -eq [System.Management.Automation.CompletionResultType]::ProviderContainer -and
+                $result.CompletionText[-1] -ne '\')
+            {
+                $null = $results.CompletionMatches.Remove($result)
+
+                $updatedResult = New-Object System.Management.Automation.CompletionResult `
+                    (($result.CompletionText + '\'), $result.ListItemText, $result.ResultType, $result.ToolTip)
+                $results.CompletionMatches.Add($updatedResult)
             }
         }
     }
