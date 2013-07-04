@@ -874,14 +874,36 @@ function global:TabExpansion2
     {
         foreach ($result in @($results.CompletionMatches))
         {
-            if ($result.ResultType -eq [System.Management.Automation.CompletionResultType]::ProviderContainer -and
-                $result.CompletionText[-1] -ne '\')
+            if ($result.ResultType -eq [System.Management.Automation.CompletionResultType]::ProviderContainer)
             {
-                $null = $results.CompletionMatches.Remove($result)
+                $completionText = $result.CompletionText
+                $lastChar = $completionText[-1]
+                $lastIsQuote = ($lastChar -eq '"' -or $lastChar -eq "'")
+                if ($lastIsQuote)
+                {
+                    $lastChar = $completionText[-2]
+                }
 
-                $updatedResult = New-Object System.Management.Automation.CompletionResult `
-                    (($result.CompletionText + '\'), $result.ListItemText, $result.ResultType, $result.ToolTip)
-                $results.CompletionMatches.Add($updatedResult)
+                if ($lastChar -ne '\')
+                {
+                    $null = $results.CompletionMatches.Remove($result)
+
+                    
+                    if ($lastIsQuote)
+                    {
+                        $completionText =
+                            $completionText.Substring(0, $completionText.Length - 1) +
+                            '\' + $completionText[-1]
+                    }
+                    else
+                    {
+                        $completionText = $completionText + '\'
+                    }
+
+                    $updatedResult = New-Object System.Management.Automation.CompletionResult `
+                        ($completionText, $result.ListItemText, $result.ResultType, $result.ToolTip)
+                    $results.CompletionMatches.Add($updatedResult)
+                }
             }
         }
     }
