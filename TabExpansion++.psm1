@@ -1004,6 +1004,20 @@ $descriptions = @{}
 # And private data for the above completions cached in this hashtable
 $completionPrivateData = @{}
 
+
+function Enable-TabExpansion
+{
+	$script:options = Get-Variable optionsClone -ValueOnly -Scope Script
+	Remove-Variable optionsClone -Scope Script
+}
+
+function Disable-TabExpansion
+{
+	$script:optionsClone = Get-Variable options -ValueOnly -Scope Script
+	Remove-Variable options -Scope Script
+}
+
+
 # Define the default display properties for the objects returned by Get-ArgumentCompleter
 $typeData = new-object System.Management.Automation.Runspaces.TypeData "TabExpansion++.ArgumentCompleter"
 [string[]]$properties = echo Command Parameter Native Description
@@ -1017,4 +1031,4 @@ $backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQue
 Update-ArgumentCompleter -AsJob
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Update-ArgumentCompleter
+                    Set-TabExpansionOption, Update-ArgumentCompleter,*-TabExpansion
