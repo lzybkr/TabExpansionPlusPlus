@@ -1,4 +1,4 @@
-﻿
+
 #
 # .SYNOPSIS
 #
@@ -62,7 +62,7 @@ function GetSnapinCompletion
     Get-PSSnapin $wordToComplete* |
         Sort-Object -Property Name |
         ForEach-Object {
-	        New-CompletionResult $_.Name $_.Description
+            New-CompletionResult $_.Name $_.Description
         }
 }
 
@@ -189,3 +189,45 @@ function SetStrictMode_VersionCompleter
         New-CompletionResult $_ "Version $_"
     }
 }
+
+
+
+# .SYNOPSIS
+#
+#    Complete the -Module argument to Save/Update-Help cmdlets
+#
+function HelpModuleCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Module',
+        Command = ('Save-Help','Update-Help'),
+        Description = 'Completes Module parameter for Save/Update-Help commands, for example:  Save-Help -Module <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
+    $tooltip = "Description: {0}`nModuleType: {1}`nPath: {2}" -f $_.Description,$_.ModuleType,$_.Path
+        New-CompletionResult $_.Name $tooltip
+    }
+}
+
+
+#
+# .SYNOPSIS
+#
+#    Completes the -Scope argument to the *-Variable, *-Alias, *-PSDrive
+#
+function ScopeParameterCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Scope',
+        Command = {Get-CommandWithParameter -Module Microsoft.PowerShell.* -ParameterName Scope},
+        Description = 'Completes the Scope argument for *-Variable, *-Alias, *-PSDrive. For example:  Get-Variable -Scope <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    echo Global Local Script Private | Where-Object {$_ -like "$wordToComplete*"} | ForEach-Object {
+        New-CompletionResult $_ "Scope '$_'"
+    }
+}
+
