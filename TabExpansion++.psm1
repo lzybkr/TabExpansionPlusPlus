@@ -1,4 +1,4 @@
-﻿#############################################################################
+#############################################################################
 #
 # TabExpansion++
 #
@@ -466,38 +466,46 @@ function Update-ArgumentCompleter
 #
 function Get-ArgumentCompleter
 {
+    [CmdletBinding()]
+    param([string]$Name='*')
+    
     function WriteCompleters
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
         {
-            $c = $command
-            if ($command -and $parameter) { $c += ':' }
-            $description = $descriptions["${c}${parameter}${native}"]
-            $completer = [pscustomobject]@{
+            if($command -like $Name)
+            {
+                $c = $command
+                if ($command -and $parameter) { $c += ':' }
+                $description = $descriptions["${c}${parameter}${native}"]
+                $completer = [pscustomobject]@{
                 Command = $command
                 Parameter = $parameter
                 Native = $native
                 Description = $description
                 ScriptBlock = $scriptblock
+                File = Split-Path -Leaf -Path $scriptblock.File
             }
+            
             $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
             Write-Output $completer
+            }
         }
     
         foreach ($pair in $options.CustomArgumentCompleters.GetEnumerator())
         {
-            if ($pair.Key -match '^(.*):(.*)$')
-            {
-                $command = $matches[1]
-                $parameter = $matches[2]
-            }
-            else
-            {
-                $parameter = $pair.Key
-                $command = ""
-            }
+        if ($pair.Key -match '^(.*):(.*)$')
+        {
+        $command = $matches[1]
+        $parameter = $matches[2]
+        }
+        else
+        {
+        $parameter = $pair.Key
+        $command = ""
+        }
 
-            WriteCompleter $command $parameter $false $pair.Value
+        WriteCompleter $command $parameter $false $pair.Value
         }
 
         foreach ($pair in $options.NativeArgumentCompleters.GetEnumerator())
@@ -1003,6 +1011,7 @@ $options = @{
 $descriptions = @{}
 # And private data for the above completions cached in this hashtable
 $completionPrivateData = @{}
+
 
 # Define the default display properties for the objects returned by Get-ArgumentCompleter
 $typeData = new-object System.Management.Automation.Runspaces.TypeData "TabExpansion++.ArgumentCompleter"
