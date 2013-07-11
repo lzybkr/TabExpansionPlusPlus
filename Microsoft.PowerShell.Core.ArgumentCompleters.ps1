@@ -1,4 +1,4 @@
-﻿
+
 #
 # .SYNOPSIS
 #
@@ -62,7 +62,7 @@ function GetSnapinCompletion
     Get-PSSnapin $wordToComplete* |
         Sort-Object -Property Name |
         ForEach-Object {
-	        New-CompletionResult $_.Name $_.Description
+            New-CompletionResult $_.Name $_.Description
         }
 }
 
@@ -206,7 +206,8 @@ function HelpModuleCompleter
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
-        New-CompletionResult $_.Name $_.Name
+    $tooltip = "Description: {0}`nModuleType: {1}`nPath: {2}" -f $_.Description,$_.ModuleType,$_.Path
+        New-CompletionResult $_.Name $tooltip
     }
 }
 
