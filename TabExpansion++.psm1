@@ -82,20 +82,20 @@ function Get-CommandWithParameter
 {
 [CmdletBinding(DefaultParameterSetName='AllCommandSet')]
 param(
-    [Parameter(ParameterSetName='AllCommandSet', Position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ParameterSetName='AllCommandSet', Position=0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
     [string[]]
     ${Name},
 
-    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName)]
     [string[]]
     ${Verb},
 
-    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName)]
     [string[]]
     ${Noun},
 
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string[]]
     ${Module},
 
@@ -551,7 +551,7 @@ function Set-TabExpansionOption
 #
 filter LoadArgumentCompleters
 {
-    param([Parameter(ValueFromPipeline=$true)]
+    param([Parameter(ValueFromPipeline)]
           [System.IO.FileInfo]$file,
 
           [System.Collections.Concurrent.ConcurrentQueue[object]]          
@@ -775,19 +775,19 @@ function global:TabExpansion2
 {
     [CmdletBinding(DefaultParameterSetName = 'ScriptInputSet')]
     Param(
-        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory = $true, Position = 0)]
+        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 0)]
         [string] $inputScript,
     
-        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory = $true, Position = 1)]
+        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 1)]
         [int] $cursorColumn,
 
-        [Parameter(ParameterSetName = 'AstInputSet', Mandatory = $true, Position = 0)]
+        [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 0)]
         [System.Management.Automation.Language.Ast] $ast,
 
-        [Parameter(ParameterSetName = 'AstInputSet', Mandatory = $true, Position = 1)]
+        [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 1)]
         [System.Management.Automation.Language.Token[]] $tokens,
 
-        [Parameter(ParameterSetName = 'AstInputSet', Mandatory = $true, Position = 2)]
+        [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 2)]
         [System.Management.Automation.Language.IScriptPosition] $positionOfCursor,
     
         [Parameter(ParameterSetName = 'ScriptInputSet', Position = 2)]
