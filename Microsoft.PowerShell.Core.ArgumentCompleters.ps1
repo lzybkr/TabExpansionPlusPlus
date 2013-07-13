@@ -252,12 +252,15 @@ function HelpNameCompletion
             [System.Management.Automation.CommandTypes]
         ) | where { $_ -notin 'All', 'Application' })
     ))
-    # Than - about_*.
+
+    # Then - about_*.
     # About for main PS first...
     $psHomeHelpFiles = @(Get-ChildItem -Path $PSHOME\*\*.help.txt)
+
     # And for any other modules...
     $modulesHelpFiles = @(Get-Module | where ModuleBase -ne $PSHOME) |
         Get-ChildItem -Path { $_.ModuleBase } -Filter *.help.txt -Recurse
+
     $abouts = $psHomeHelpFiles + $modulesHelpFiles | 
         Where-Object { $_.Name -like "$wordToComplete*" } |
         Sort-Object -Property Name |
@@ -271,18 +274,18 @@ function HelpNameCompletion
             }
             New-CompletionResult $text $toolTip
         }
+
     # And last but not least - providers
-    $providers = Get-PSProvider | Where-Object { 
-        $_.Name -like "$wordToComplete*" -and 
-        $_.HelpFile 
-    } |
-    Sort-Object -Property Name |
-    ForEach-Object {
-        $toolTip = "Name: {0} Drives: {1}" -f
-            $_.Name,
-            $($_.Drives -join ", ")
-        New-CompletionResult $_.Name $toolTip
-    }
+    $providers = Get-PSProvider |
+        Where-Object {
+            $_.Name -like "$wordToComplete*" -and
+            $_.HelpFile } |
+        Sort-Object -Property Name |
+        ForEach-Object {
+            $toolTip = "Name: {0} Drives: {1}" -f $_.Name, $($_.Drives -join ", ")
+            New-CompletionResult $_.Name $toolTip
+        }
+
     # combine all to get mix of different types rather than FIFO with providers/ abouts at the end...
     $commands + $abouts + $providers | Sort-Object -Property ListItemText
 }
