@@ -467,13 +467,13 @@ function Update-ArgumentCompleter
 function Get-ArgumentCompleter
 {
     [CmdletBinding()]
-    param([string]$Name='*')
+    param([string[]]$Name = '*')
     
     function WriteCompleters
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
         {
-            if($command -like $Name)
+            if ($Name | Where-Object { $command -like $_ } | Select -First 1)
             {
                 $c = $command
                 if ($command -and $parameter) { $c += ':' }
@@ -494,18 +494,18 @@ function Get-ArgumentCompleter
     
         foreach ($pair in $options.CustomArgumentCompleters.GetEnumerator())
         {
-        if ($pair.Key -match '^(.*):(.*)$')
-        {
-        $command = $matches[1]
-        $parameter = $matches[2]
-        }
-        else
-        {
-        $parameter = $pair.Key
-        $command = ""
-        }
+            if ($pair.Key -match '^(.*):(.*)$')
+            {
+                $command = $matches[1]
+                $parameter = $matches[2]
+            }
+            else
+            {
+                $parameter = $pair.Key
+                $command = ""
+            }
 
-        WriteCompleter $command $parameter $false $pair.Value
+            WriteCompleter $command $parameter $false $pair.Value
         }
 
         foreach ($pair in $options.NativeArgumentCompleters.GetEnumerator())
@@ -515,7 +515,7 @@ function Get-ArgumentCompleter
     }
 
     Flush-BackgroundResultsQueue
-    WriteCompleters | Sort -Property Native,Parameter,Command
+    WriteCompleters | Sort -Property Native,Command,Parameter
 }
 
 #############################################################################
@@ -1015,7 +1015,7 @@ $completionPrivateData = @{}
 
 # Define the default display properties for the objects returned by Get-ArgumentCompleter
 $typeData = new-object System.Management.Automation.Runspaces.TypeData "TabExpansion++.ArgumentCompleter"
-[string[]]$properties = echo Command Parameter Native Description
+[string[]]$properties = echo Command Parameter
 $propertySetData = new-object System.Management.Automation.Runspaces.PropertySetData -ArgumentList (,$properties)
 $typeData.DefaultDisplayPropertySet = $propertySetData
 Update-TypeData -TypeData $typeData -Force
