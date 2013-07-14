@@ -1014,11 +1014,8 @@ $completionPrivateData = @{}
 
 
 # Define the default display properties for the objects returned by Get-ArgumentCompleter
-$typeData = new-object System.Management.Automation.Runspaces.TypeData "TabExpansion++.ArgumentCompleter"
-[string[]]$properties = echo Command Parameter Native Description
-$propertySetData = new-object System.Management.Automation.Runspaces.PropertySetData -ArgumentList (,$properties)
-$typeData.DefaultDisplayPropertySet = $propertySetData
-Update-TypeData -TypeData $typeData -Force
+[string[]]$properties = Write-Output Command Parameter Native Description
+Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
 
 # Load completers for loaded modules now.  This is done in the background
 # because searching all modules is slow and we don't want to block startup.
