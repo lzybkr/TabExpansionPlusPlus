@@ -1,4 +1,36 @@
-﻿
+#
+# .SYNOPSIS
+#
+#    Complete the -Namespace argument to Wmi cmdlets (similiar to buil-in cim cmdlets namespace completion support)
+#
+function WmiNamespaceCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Namespace',
+        Command = {Get-CommandWithParameter -Noun wmi* -ParameterName Namespace},
+        Description = 'Complete the -Namespace argument to Wmi cmdlets. For example: Get-WmiObject -Namespace <TAB>'
+    )]
+   param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $nsParent='root'
+
+    if ($wordToComplete)
+    {
+        [int]$delimiter = $wordToComplete.LastIndexOfAny([char[]]('\','/'))
+        if($delimiter -ne -1)
+        {
+                $nsParent = $wordToComplete.Substring(0,$delimiter)
+                $nsLeaf = $wordToComplete.Substring($delimiter+1)
+        }
+    }
+
+   Microsoft.PowerShell.Management\Get-WmiObject -Class __NAMESPACE -Namespace $nsParent | Where-Object Name -like $nsLeaf* | Sort-Object Name | ForEach-Object { 
+         $namespace = '{0}/{1}' -f $nsParent.Replace('\','/'),$_.Name
+         New-CompletionResult $namespace $namespace
+   }
+}
+
+
 #
 # .SYNOPSIS
 #

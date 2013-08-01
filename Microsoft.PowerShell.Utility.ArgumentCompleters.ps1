@@ -1,4 +1,4 @@
-﻿
+
 #
 # Reading the registry for progids takes > 500ms, so we do it at module load time.
 #
@@ -169,4 +169,44 @@ function Ps1xmlPathArgumentCompletion
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-CompletionWithExtension $lastWord '.ps1xml'
+}
+
+
+#
+# .SYNOPSIS
+#
+#    Complete the -SerializationMethod argument to Update-TypeData
+#
+function UpdateTypeDataSerializationMethodCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'SerializationMethod',
+        Command = 'Update-TypeData',
+        Description = 'Complete the -SerializationMethod argument to Update-TypeData. For example: Update-TypeData -SerializationMethod <TAB>')]
+   param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+   $sm = [PSObject].Assembly.GetType('System.Management.Automation.SerializationMethod')
+   [System.Enum]::GetNames($sm) | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | Foreach-Object {
+    New-CompletionResult $_ $_
+   }
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Complete the SourceIdentifier argument to Register-EngineEvent
+#
+function EventNameCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'SourceIdentifier',
+        Command = 'Register-EngineEvent',
+        Description = 'Complete the -SourceIdentifier argument for Register-ObjectEvent, for example: Register-EngineEvent -SourceIdentifier <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    [System.Management.Automation.PsEngineEvent].GetFields() | ForEach-Object { $_.GetValue($null) } | Sort-Object | Where-Object {$_ -like "*$wordToComplete*"} | ForEach-Object { 
+        New-CompletionResult  $_ $_
+    }
 }
