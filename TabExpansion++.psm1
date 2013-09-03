@@ -1,4 +1,4 @@
-﻿#############################################################################
+#############################################################################
 #
 # TabExpansion++
 #
@@ -82,20 +82,20 @@ function Get-CommandWithParameter
 {
 [CmdletBinding(DefaultParameterSetName='AllCommandSet')]
 param(
-    [Parameter(ParameterSetName='AllCommandSet', Position=0, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ParameterSetName='AllCommandSet', Position=0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
     [string[]]
     ${Name},
 
-    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName)]
     [string[]]
     ${Verb},
 
-    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ParameterSetName='CmdletSet', ValueFromPipelineByPropertyName)]
     [string[]]
     ${Noun},
 
-    [Parameter(ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipelineByPropertyName)]
     [string[]]
     ${Module},
 
@@ -466,22 +466,30 @@ function Update-ArgumentCompleter
 #
 function Get-ArgumentCompleter
 {
+    [CmdletBinding()]
+    param([string[]]$Name = '*')
+    
     function WriteCompleters
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
         {
-            $c = $command
-            if ($command -and $parameter) { $c += ':' }
-            $description = $descriptions["${c}${parameter}${native}"]
-            $completer = [pscustomobject]@{
+            if ($Name | Where-Object { $command -like $_ } | Select -First 1)
+            {
+                $c = $command
+                if ($command -and $parameter) { $c += ':' }
+                $description = $descriptions["${c}${parameter}${native}"]
+                $completer = [pscustomobject]@{
                 Command = $command
                 Parameter = $parameter
                 Native = $native
                 Description = $description
                 ScriptBlock = $scriptblock
+                File = Split-Path -Leaf -Path $scriptblock.File
             }
+            
             $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
             Write-Output $completer
+            }
         }
     
         foreach ($pair in $options.CustomArgumentCompleters.GetEnumerator())
@@ -507,7 +515,7 @@ function Get-ArgumentCompleter
     }
 
     Flush-BackgroundResultsQueue
-    WriteCompleters | Sort -Property Native,Parameter,Command
+    WriteCompleters | Sort -Property Native,Command,Parameter
 }
 
 #############################################################################
@@ -529,12 +537,16 @@ function Get-ArgumentCompleter
 function Set-TabExpansionOption
 {
     param(
-        [ValidateSet('ExcludeHiddenFiles', 'RelativePaths', 'LiteralPaths', 'IgnoreHiddenShares')]
+        [ValidateSet('ExcludeHiddenFiles',
+                     'RelativePaths',
+                     'LiteralPaths',
+                     'IgnoreHiddenShares',
+                     'AppendBackslash')]
         [string]
         $Option,
 
         [object]
-        $Value)
+        $Value = $true)
     
     $script:options[$option] = $value
 }
@@ -547,7 +559,7 @@ function Set-TabExpansionOption
 #
 filter LoadArgumentCompleters
 {
-    param([Parameter(ValueFromPipeline=$true)]
+    param([Parameter(ValueFromPipeline)]
           [System.IO.FileInfo]$file,
 
           [System.Collections.Concurrent.ConcurrentQueue[object]]          
@@ -771,19 +783,19 @@ function global:TabExpansion2
 {
     [CmdletBinding(DefaultParameterSetName = 'ScriptInputSet')]
     Param(
-        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory = $true, Position = 0)]
+        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 0)]
         [string] $inputScript,
     
-        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory = $true, Position = 1)]
+        [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 1)]
         [int] $cursorColumn,
 
-        [Parameter(ParameterSetName = 'AstInputSet', Mandatory = $true, Position = 0)]
+        [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 0)]
         [System.Management.Automation.Language.Ast] $ast,
 
-        [Parameter(ParameterSetName = 'AstInputSet', Mandatory = $true, Position = 1)]
+        [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 1)]
         [System.Management.Automation.Language.Token[]] $tokens,
 
-        [Parameter(ParameterSetName = 'AstInputSet', Mandatory = $true, Position = 2)]
+        [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 2)]
         [System.Management.Automation.Language.IScriptPosition] $positionOfCursor,
     
         [Parameter(ParameterSetName = 'ScriptInputSet', Position = 2)]
@@ -863,6 +875,55 @@ function global:TabExpansion2
                     $null = $results.CompletionMatches.Remove($result)
                 }
             }
+        }
+    }
+    if ($options.AppendBackslash -and
+        $results.CompletionMatches.ResultType -contains [System.Management.Automation.CompletionResultType]::ProviderContainer)
+    {
+        foreach ($result in @($results.CompletionMatches))
+        {
+            if ($result.ResultType -eq [System.Management.Automation.CompletionResultType]::ProviderContainer)
+            {
+                $completionText = $result.CompletionText
+                $lastChar = $completionText[-1]
+                $lastIsQuote = ($lastChar -eq '"' -or $lastChar -eq "'")
+                if ($lastIsQuote)
+                {
+                    $lastChar = $completionText[-2]
+                }
+
+                if ($lastChar -ne '\')
+                {
+                    $null = $results.CompletionMatches.Remove($result)
+
+                    
+                    if ($lastIsQuote)
+                    {
+                        $completionText =
+                            $completionText.Substring(0, $completionText.Length - 1) +
+                            '\' + $completionText[-1]
+                    }
+                    else
+                    {
+                        $completionText = $completionText + '\'
+                    }
+
+                    $updatedResult = New-Object System.Management.Automation.CompletionResult `
+                        ($completionText, $result.ListItemText, $result.ResultType, $result.ToolTip)
+                    $results.CompletionMatches.Add($updatedResult)
+                }
+            }
+        }
+    }
+
+    if ($results.CompletionMatches.Count -eq 0)
+    {
+        # No results, if this module has overridden another TabExpansion2 function, call it
+        # but only if it's not the built-in function (which we assume if function isn't
+        # defined in a file.
+        if ($oldTabExpansion2 -ne $null -and $oldTabExpansion2.File -ne $null)
+        {
+            return (& $oldTabExpansion2 @PSBoundParameters)
         }
     }
 
@@ -962,12 +1023,10 @@ $descriptions = @{}
 # And private data for the above completions cached in this hashtable
 $completionPrivateData = @{}
 
+
 # Define the default display properties for the objects returned by Get-ArgumentCompleter
-$typeData = new-object System.Management.Automation.Runspaces.TypeData "TabExpansion++.ArgumentCompleter"
-[string[]]$properties = echo Command Parameter Native Description
-$propertySetData = new-object System.Management.Automation.Runspaces.PropertySetData -ArgumentList (,$properties)
-$typeData.DefaultDisplayPropertySet = $propertySetData
-Update-TypeData -TypeData $typeData -Force
+[string[]]$properties = "Command", "Parameter"
+Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
 
 # Load completers for loaded modules now.  This is done in the background
 # because searching all modules is slow and we don't want to block startup.

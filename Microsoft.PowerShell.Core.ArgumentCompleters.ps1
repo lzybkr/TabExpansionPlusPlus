@@ -1,4 +1,4 @@
-﻿
+
 #
 # .SYNOPSIS
 #
@@ -62,7 +62,7 @@ function GetSnapinCompletion
     Get-PSSnapin $wordToComplete* |
         Sort-Object -Property Name |
         ForEach-Object {
-	        New-CompletionResult $_.Name $_.Description
+            New-CompletionResult $_.Name $_.Description
         }
 }
 
@@ -188,4 +188,104 @@ function SetStrictMode_VersionCompleter
     ForEach-Object {
         New-CompletionResult $_ "Version $_"
     }
+}
+
+
+# .SYNOPSIS
+#
+#    Complete the -Module argument to Save/Update-Help cmdlets
+#
+function HelpModuleCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Module',
+        Command = ('Save-Help','Update-Help'),
+        Description = 'Completes Module parameter for Save/Update-Help commands, for example:  Save-Help -Module <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
+        $tooltip = "Description: {0}`nModuleType: {1}`nPath: {2}" -f $_.Description, $_.ModuleType, $_.Path
+        New-CompletionResult $_.Name $tooltip
+    }
+}
+
+
+#
+# .SYNOPSIS
+#
+#    Completes the -Scope argument to the *-Variable, *-Alias, *-PSDrive
+#
+function ScopeParameterCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Scope',
+        Command = {Get-CommandWithParameter -Module Microsoft.PowerShell.* -ParameterName Scope},
+        Description = 'Completes the Scope argument for *-Variable, *-Alias, *-PSDrive. For example:  Get-Variable -Scope <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    echo Global Local Script Private | Where-Object {$_ -like "$wordToComplete*"} | ForEach-Object {
+        New-CompletionResult $_ "Scope '$_'"
+    }
+}
+
+#
+# .SYNOPSIS
+#
+#     Tab-completes names of help topics, also conceptual (about_*).
+#
+function HelpNameCompletion
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = ('help','Get-Help'),
+        Description = 'Tab completes names of help articles, for example:  Get-Help -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    # First - commands... but we need to leave All and Application out...
+    $commands = @([System.Management.Automation.CompletionCompleters]::CompleteCommand(
+        $wordToComplete,
+        '*', # Any module
+        $([enum]::GetNames(
+            [System.Management.Automation.CommandTypes]
+        ) | where { $_ -notin 'All', 'Application' })
+    ))
+
+    # Then - about_*.
+    # About for main PS first...
+    $psHomeHelpFiles = @(Get-ChildItem -Path $PSHOME\*\*.help.txt)
+
+    # And for any other modules...
+    $modulesHelpFiles = @(Get-Module | where ModuleBase -ne $PSHOME) |
+        Get-ChildItem -Path { $_.ModuleBase } -Filter *.help.txt -Recurse
+
+    $abouts = $psHomeHelpFiles + $modulesHelpFiles | 
+        Where-Object { $_.Name -like "$wordToComplete*" } |
+        Sort-Object -Property Name |
+        ForEach-Object {
+            $text = $_.Name -replace '\.help\.txt'
+            if ((Get-Content -Raw -Path $_.FullName) -replace '\s+', ' ' -match 
+                'SHORT DESCRIPTION ([\s\S]*?) LONG') {
+                $toolTip = $Matches[1]
+            } else {
+                $toolTip = $text
+            }
+            New-CompletionResult $text $toolTip
+        }
+
+    # And last but not least - providers
+    $providers = Get-PSProvider |
+        Where-Object {
+            $_.Name -like "$wordToComplete*" -and
+            $_.HelpFile } |
+        Sort-Object -Property Name |
+        ForEach-Object {
+            $toolTip = "Name: {0} Drives: {1}" -f $_.Name, $($_.Drives -join ", ")
+            New-CompletionResult $_.Name $toolTip
+        }
+
+    # combine all to get mix of different types rather than FIFO with providers/ abouts at the end...
+    $commands + $abouts + $providers | Sort-Object -Property ListItemText
 }
