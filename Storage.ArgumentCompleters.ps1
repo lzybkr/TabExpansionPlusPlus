@@ -25,7 +25,7 @@ function Storage_PhysicalDiskFriendlyNameParameterCompletion
             }
             New-CompletionResult $name $tooltip
         }
-} 
+}
 
 
 #

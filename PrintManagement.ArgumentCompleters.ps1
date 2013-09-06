@@ -31,9 +31,10 @@ function PrinterNameArgumentCompletion
             if ($tooltip -eq '') { $tooltip = $_.Caption }
             New-CompletionResult $_.Name $tooltip
     }
-} 
+}
 
 
+#
 # .SYNOPSIS
 #
 #    Complete the -Name argument to *-PrinterDriver cmdlets
@@ -61,7 +62,8 @@ function PrinterDriverNameArgumentCompletion
             if (!$tooltip) { $tooltip = $_.Manufacturer }
             New-CompletionResult $_.Name $tooltip
         }
-} 
+}
+
 
 #
 # .SYNOPSIS
@@ -88,4 +90,4 @@ function PrinterPortArgumentCompletion
         ForEach-Object {
             New-CompletionResult $_.Name $_.Description
         }
-} 
+}

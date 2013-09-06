@@ -17,4 +17,4 @@ function Dism_WindowsOptionalFeatureNameCompleter
     Dism\Get-WindowsOptionalFeature -Online | Where-Object FeatureName -like "$wordToComplete*" | Sort-Object FeatureName | ForEach-Object {
         New-CompletionResult $_.FeatureName "FeatureName '$($_.FeatureName)'"
     }
-} 
+}

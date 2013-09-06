@@ -17,7 +17,7 @@ function NetFirewallRuleNameParameterCompleter
     NetSecurity\Get-NetFirewallRule -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
         New-CompletionResult $_.Name "Name: $($_.Name)"
     }
-} 
+}
 
 
 #
@@ -25,7 +25,6 @@ function NetFirewallRuleNameParameterCompleter
 #
 #    Complete the -DisplayName argument to *-NetFirewallRule cmdlets
 #
-
 function NetFirewallRuleDisplayNameParameterCompleter
 {
     [ArgumentCompleter(
@@ -38,5 +37,5 @@ function NetFirewallRuleDisplayNameParameterCompleter
     NetSecurity\Get-NetFirewallRule -DisplayName "$wordToComplete*" | Sort-Object DisplayName | ForEach-Object {
         New-CompletionResult $_.DisplayName "DisplayName: $($_.DisplayName)"
     }
-} 
+}
 

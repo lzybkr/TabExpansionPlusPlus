@@ -44,7 +44,7 @@ function New-CompletionResult
 
           [System.Management.Automation.CompletionResultType]
           $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
-    
+
     if ($ToolTip -eq '')
     {
         $ToolTip = $CompletionText
@@ -365,7 +365,7 @@ function Register-ArgumentCompleter
         [string[]]$CommandName = "",
 
         [Parameter(ParameterSetName="PowerShellSet", Mandatory)]
-        [string]$ParameterName = "",          
+        [string]$ParameterName = "",
 
         [Parameter(Mandatory)]
         [scriptblock]$ScriptBlock,
@@ -478,7 +478,7 @@ function Get-ArgumentCompleter
 {
     [CmdletBinding()]
     param([string[]]$Name = '*')
-    
+
     function WriteCompleters
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
@@ -496,12 +496,12 @@ function Get-ArgumentCompleter
                 ScriptBlock = $scriptblock
                 File = Split-Path -Leaf -Path $scriptblock.File
             }
-            
+
             $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
             Write-Output $completer
             }
         }
-    
+
         foreach ($pair in $options.CustomArgumentCompleters.GetEnumerator())
         {
             if ($pair.Key -match '^(.*):(.*)$')
@@ -557,7 +557,7 @@ function Set-TabExpansionOption
 
         [object]
         $Value = $true)
-    
+
     $script:options[$option] = $value
 }
 
@@ -572,7 +572,7 @@ filter LoadArgumentCompleters
     param([Parameter(ValueFromPipeline)]
           [System.IO.FileInfo]$file,
 
-          [System.Collections.Concurrent.ConcurrentQueue[object]]          
+          [System.Collections.Concurrent.ConcurrentQueue[object]]
           $backgroundResultsQueue)
 
     if (!(Test-Path $file.FullName))
@@ -586,7 +586,7 @@ filter LoadArgumentCompleters
     {
         return
     }
-    
+
 
     $paramAsts = $ast.FindAll({
         param($ast)
@@ -601,7 +601,7 @@ filter LoadArgumentCompleters
             foreach ($attributeAst in $paramBlock.Attributes)
             {
                 if ($attributeAst.TypeName.GetReflectionAttributeType() -eq $type)
-                {                    
+                {
                     & $scriptBlock $paramBlock.Parent.GetScriptBlock()
                     # There may be more than one matching attribute, but we don't care
                     # here - the called script block needs to handle it as appropriate.
@@ -705,7 +705,7 @@ function Flush-BackgroundResultsQueue
         $parameters = $item.Value
         if ($item.ArgumentCompleter)
         {
-            Register-ArgumentCompleter @parameters 
+            Register-ArgumentCompleter @parameters
         }
         elseif ($item.InitializationData)
         {
@@ -795,14 +795,14 @@ function TryAttributeArgumentCompletion
 # This function is partly a copy of the V3 TabExpansion2, adding a few
 # capabilities such as completing attribute arguments and excluding hidden
 # files from results.
-# 
+#
 function global:TabExpansion2
 {
     [CmdletBinding(DefaultParameterSetName = 'ScriptInputSet')]
     Param(
         [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 0)]
         [string] $inputScript,
-    
+
         [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 1)]
         [int] $cursorColumn,
 
@@ -814,7 +814,7 @@ function global:TabExpansion2
 
         [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 2)]
         [System.Management.Automation.Language.IScriptPosition] $positionOfCursor,
-    
+
         [Parameter(ParameterSetName = 'ScriptInputSet', Position = 2)]
         [Parameter(ParameterSetName = 'AstInputSet', Position = 3)]
         [Hashtable] $options = $null
@@ -913,7 +913,6 @@ function global:TabExpansion2
                 {
                     $null = $results.CompletionMatches.Remove($result)
 
-                    
                     if ($lastIsQuote)
                     {
                         $completionText =

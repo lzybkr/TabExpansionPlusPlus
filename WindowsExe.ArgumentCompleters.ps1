@@ -234,11 +234,11 @@ function NetExeCompletion
             nct TIME $msgTable.net_TIME {
                 nct -Argument '/DOMAIN' $msgTable.net_TIME_DOMAIN
                 nct -Argument '/RTSDOMAIN' $msgTable.net_TIME_RTSDOMAIN
-                nct -Argument '/SET' $msgTable.net_TIME_SET 
+                nct -Argument '/SET' $msgTable.net_TIME_SET
             }
 
             nct USE $msgTable.net_USE {
-                nct -Argument '/USER:' $msgTable.net_USE_USER 
+                nct -Argument '/USER:' $msgTable.net_USE_USER
                 nct -Argument '/SMARTCARD' $msgTable.net_USE_SMARTCARD
                 nct -Argument '/SAVECRED' $msgTable.net_USE_SAVECRED
                 nct -Argument '/DELETE' $msgTable.net_USE_DELETE
@@ -1137,6 +1137,7 @@ function NetshExeCompletion
     Get-CommandTreeCompletion $wordToComplete $commandAst $commandTree
 }
 
+
 #
 # .SYNOPSIS
 #
@@ -1164,7 +1165,7 @@ function BCDEditExeCompletion
         {
             $nestedSwitches += bcdedit /? $switch 2>$null | ForEach-Object { [regex]::Matches($_, '/\w+').Value }
         }
-    
+
         $BCDEditSwitches = ($switches += $nestedSwitches) | Sort-Object -Unique
         Set-CompletionPrivateData -Key BCDEdit -Value $BCDEditSwitches
     }

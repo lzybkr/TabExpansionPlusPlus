@@ -15,7 +15,7 @@ function ScheduledTaskTaskNameArgumentCompletion
         Sort-Object TaskName |
         ForEach-Object {
             New-CompletionResult $_.TaskName $_.Description
-        } 
+        }
 }
 
 
@@ -38,5 +38,5 @@ function ScheduledTaskTaskPathArgumentCompletion
         Sort-Object TaskPath |
         ForEach-Object {
             New-CompletionResult $_.TaskPath $_.Description
-        } 
+        }
 }

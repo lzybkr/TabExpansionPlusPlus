@@ -12,9 +12,9 @@ function IseSnippetModuleCompleter
         Command = 'Import-IseSnippet',
         Description = 'Complete the -Module argument to Import-IseSnippet: Import-IseSnippet -Module <TAB>'
     )]
-   param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-   Microsoft.PowerShell.Core\Get-Module -Name "$wordToComplete*" -ListAvailable | Sort-Object Name | Foreach-Object { 
-	New-CompletionResult $_.Name $_.Name
-   }
+    Microsoft.PowerShell.Core\Get-Module -Name "$wordToComplete*" -ListAvailable | Sort-Object Name | Foreach-Object {
+        New-CompletionResult $_.Name $_.Name
+    }
 }

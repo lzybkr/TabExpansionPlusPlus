@@ -24,7 +24,7 @@ function WmiNamespaceCompleter
         }
     }
 
-   Microsoft.PowerShell.Management\Get-WmiObject -Class __NAMESPACE -Namespace $nsParent | Where-Object Name -like $nsLeaf* | Sort-Object Name | ForEach-Object { 
+   Microsoft.PowerShell.Management\Get-WmiObject -Class __NAMESPACE -Namespace $nsParent | Where-Object Name -like $nsLeaf* | Sort-Object Name | ForEach-Object {
          $namespace = '{0}/{1}' -f $nsParent.Replace('\','/'),$_.Name
          New-CompletionResult $namespace $namespace
    }
@@ -85,7 +85,7 @@ Complete item types (in FileSystem/ ActiveDirectory), for example:
     }
     $completionSet = switch ($resolvedPath.Provider.Name) {
         FileSystem {
-            Write-Output File, Directory   
+            Write-Output File, Directory
         }
         ActiveDirectory {
             Write-Output User, Group, OrganizationalUnit, Container, Computer
@@ -95,7 +95,7 @@ Complete item types (in FileSystem/ ActiveDirectory), for example:
             $null
         }
     }
-    
+
     $completionSet |
         Where-Object { $_ -like "$wordToComplete*" } |
         Sort-Object |

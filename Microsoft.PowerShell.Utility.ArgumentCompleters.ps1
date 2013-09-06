@@ -111,7 +111,7 @@ Complete the -EventName argument for Register-ObjectEvent, for example:
 #
 # .SYNOPSIS
 #
-#    Complete the -Name argument to Out-Printer 
+#    Complete the -Name argument to Out-Printer
 #
 function OutPrinterNameArgumentCompletion
 {
@@ -206,7 +206,7 @@ function EventNameCompletion
     )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    [System.Management.Automation.PsEngineEvent].GetFields() | ForEach-Object { $_.GetValue($null) } | Sort-Object | Where-Object {$_ -like "*$wordToComplete*"} | ForEach-Object { 
+    [System.Management.Automation.PsEngineEvent].GetFields() | ForEach-Object { $_.GetValue($null) } | Sort-Object | Where-Object {$_ -like "*$wordToComplete*"} | ForEach-Object {
         New-CompletionResult  $_ $_
     }
 }

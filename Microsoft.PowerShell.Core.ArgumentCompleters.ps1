@@ -13,9 +13,9 @@ function HelpParameterNameCompletion
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $helpCommandName = $fakeBoundParameter['Name']
-    
+
     if ($helpCommandName)
-    {    
+    {
         $parameters = (Get-Command -Name $helpCommandName).Parameters
         $parameters.Keys |
             Where-Object { $_ -like "$wordToComplete*" } |
@@ -103,7 +103,7 @@ function VerbCompletion
     Get-Verb "$wordToComplete*" |
         ForEach-Object {
             New-CompletionResult $_.Verb ("Group: " + $_.Group)
-        }   
+        }
 }
 
 
@@ -126,12 +126,12 @@ function NounCompletion
     {
         $optionalParam.Module = $module
     }
-    
+
     Get-Command -Noun $wordToComplete* @optionalParam |
         ForEach-Object {($_.Name -split '-',2)[1] } | Sort-Object -Unique | ForEach-Object {
             # TODO - is a decent tooltip possible?
             New-CompletionResult $_
-    }   
+    }
 }
 
 
@@ -184,7 +184,7 @@ function SetStrictMode_VersionCompleter
     )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    '1.0', '2.0', '3.0', 'latest' | where { $_ -like "$wordToComplete*" } | 
+    '1.0', '2.0', '3.0', 'latest' | where { $_ -like "$wordToComplete*" } |
     ForEach-Object {
         New-CompletionResult $_ "Version $_"
     }
@@ -230,6 +230,7 @@ function ScopeParameterCompleter
     }
 }
 
+
 #
 # .SYNOPSIS
 #
@@ -261,12 +262,12 @@ function HelpNameCompletion
     $modulesHelpFiles = @(Get-Module | where ModuleBase -ne $PSHOME) |
         Get-ChildItem -Path { $_.ModuleBase } -Filter *.help.txt -Recurse
 
-    $abouts = $psHomeHelpFiles + $modulesHelpFiles | 
+    $abouts = $psHomeHelpFiles + $modulesHelpFiles |
         Where-Object { $_.Name -like "$wordToComplete*" } |
         Sort-Object -Property Name |
         ForEach-Object {
             $text = $_.Name -replace '\.help\.txt'
-            if ((Get-Content -Raw -Path $_.FullName) -replace '\s+', ' ' -match 
+            if ((Get-Content -Raw -Path $_.FullName) -replace '\s+', ' ' -match
                 'SHORT DESCRIPTION ([\s\S]*?) LONG') {
                 $toolTip = $Matches[1]
             } else {

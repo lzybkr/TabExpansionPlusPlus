@@ -17,5 +17,5 @@ function DnsClientInterfaceAliasParameterCompleter
     DnsClient\Get-DnsClient -InterfaceAlias "$wordToComplete*" | Sort-Object InterfaceAlias | ForEach-Object {
         New-CompletionResult $_.InterfaceAlias "InterfaceAlias: $($_.InterfaceAlias)"
     }
-} 
+}
 

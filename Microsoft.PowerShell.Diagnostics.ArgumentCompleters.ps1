@@ -30,7 +30,7 @@ Complete counter for the Get-Counter cmdlet, optionally on a remote machine. For
             # TODO: need a tooltip
             New-CompletionResult $_
         }
-} 
+}
 
 
 #
@@ -63,7 +63,7 @@ Complete counter sets for the Get-Counter cmdlet, optionally on a remote machine
             $tooltip = $_.Description
             New-CompletionResult $_.CounterSetName $tooltip
         }
-} 
+}
 
 
 #
@@ -82,11 +82,11 @@ function GetWinEvent_LogNameCompleter
 
     $optionalCn = @{}
     $cn = $fakeBoundParameter['ComputerName']
-    if ($cn) 
+    if ($cn)
     {
         $optionalCn.ComputerName = $cn
     }
-    
+
     Get-WinEvent -ListLog "$wordToComplete*" -Force @optionalCn |
         where { $_.IsEnabled } |
         Sort-Object -Property LogName |
@@ -112,7 +112,7 @@ function GetWinEvent_ListLogCompleter
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.GetLogNames() | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | ForEach-Object {
-            New-CompletionResult $_ $_
+        New-CompletionResult $_ $_
     }
 }
 
@@ -132,6 +132,6 @@ function GetWinEvent_ListProviderCompleter
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.GetProviderNames() | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | ForEach-Object {
-            New-CompletionResult $_ $_
+        New-CompletionResult $_ $_
     }
 }

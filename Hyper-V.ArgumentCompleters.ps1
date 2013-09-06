@@ -30,7 +30,7 @@ function HyperV_VMNameArgumentCompletion
         ForEach-Object {
             $toolTip = "State: $($_.State) Status: $($_.Status)"
             New-CompletionResult $_.Name $toolTip
-        } 
+        }
 }
 
 
@@ -64,7 +64,7 @@ function HyperV_VMSwitchArgumentCompletion
             $tooltip = "Description: $($_.NetAdapterInterfaceDescription)"
             New-CompletionResult $_.Name $tooltip
         }
-}  
+}
 
 
 #
@@ -96,10 +96,10 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
     Hyper-V\Get-VMIntegrationService -Name "$wordToComplete*" -VMName $vm @optionalCn |
         Sort-Object |
         ForEach-Object {
-            # TODO - need a tooltip            
+            # TODO - need a tooltip
             New-CompletionResult $_.Name
         }
-}  
+}
 
 
 #
