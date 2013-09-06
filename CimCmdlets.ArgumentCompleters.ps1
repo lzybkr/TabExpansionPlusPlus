@@ -61,7 +61,7 @@ function CimInstance_CimAssociatedInstanceResultClassNameParameterCompleter
     [ArgumentCompleter(
         Parameter = 'ResultClassName',
         Command = 'Get-CimAssociatedInstance',
-        Description = 'Complete the -ResultClassName argument to Get-CimAssociatedInstance: $disk = Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType=3'; Get-CimAssociatedInstance -CimInstance $disk -ResultClassName <TAB>'
+        Description = 'Complete the -ResultClassName argument to Get-CimAssociatedInstance: $disk = Get-CimInstance -Class Win32_LogicalDisk -Filter ''DriveType=3''; Get-CimAssociatedInstance -CimInstance $disk -ResultClassName <TAB>'
     )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
