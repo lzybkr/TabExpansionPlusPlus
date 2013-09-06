@@ -424,10 +424,19 @@ function Register-ArgumentCompleter
 function Update-ArgumentCompleter
 {
     [CmdletBinding()]
-    param([switch]$AsJob)
+    param([switch]$AsJob,[string[]]$FilePath)
+
+    Write-Verbose "Scanning for completer files..."
 
     $scriptBlock = {
         param([System.Collections.Concurrent.ConcurrentQueue[object]]$backgroundResultsQueue)
+
+        if($FilePath)
+        {
+    Get-ChildItem $FilePath | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+        }
+        else
+        {
 
         $modulePaths = $env:PSModulePath -split ';'
         foreach ($dir in $modulePaths)
@@ -439,6 +448,7 @@ function Update-ArgumentCompleter
         {
             Get-ChildItem $dir\*.ps1,$dir\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
         }
+}
     }
 
     if (!$AsJob)
@@ -576,6 +586,7 @@ filter LoadArgumentCompleters
     {
         return
     }
+    
 
     $paramAsts = $ast.FindAll({
         param($ast)
@@ -654,6 +665,9 @@ filter LoadArgumentCompleters
             $backgroundResultsQueue.Enqueue([pscustomobject]@{
                 ArgumentCompleter = $true
                 Value = $registerParams})
+
+            Write-Verbose "Registering completer '$($registerParams.CommandName)'"
+            #Write-Verbose "Registering completer '$($registerParams.CommandName)' with parameters: '$($registerParams.Keys -join ',')'"
         }
     }
 
@@ -668,6 +682,9 @@ filter LoadArgumentCompleters
                 Key = $attrInst.Key
                 Value = $result
             }
+
+            Write-Verbose "found initialization function, creating key: '$($attrInst.Key)'"
+
             $backgroundResultsQueue.Enqueue([pscustomobject]@{
                 InitializationData = $true
                 Value = $setCompletionPrivateDataParams})

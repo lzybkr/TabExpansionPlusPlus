@@ -1,4 +1,4 @@
-﻿
+
 #
 # .SYNOPSIS
 #
@@ -94,4 +94,44 @@ function GetWinEvent_LogNameCompleter
             $toolTip = "Log $($_.LogName): $($_.RecordCount) entries"
             New-CompletionResult $_.LogName $toolTip
         }
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Completes names of the logs for Get-WinEvent cmdlet.
+#
+function GetWinEvent_ListLogCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'ListLog',
+        Command = 'Get-WinEvent',
+        Description = 'Completes names for the logs, for example:  Get-WinEvent -ListLog <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.GetLogNames() | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | ForEach-Object {
+            New-CompletionResult $_ $_
+    }
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Completes providers names for Get-WinEvent cmdlet.
+#
+function GetWinEvent_ListProviderCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'ListProvider',
+        Command = 'Get-WinEvent',
+        Description = 'Completes names of the providers, for example:  Get-WinEvent -ListProvider <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.GetProviderNames() | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | ForEach-Object {
+            New-CompletionResult $_ $_
+    }
 }

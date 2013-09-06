@@ -289,3 +289,23 @@ function HelpNameCompletion
     # combine all to get mix of different types rather than FIFO with providers/ abouts at the end...
     $commands + $abouts + $providers | Sort-Object -Property ListItemText
 }
+
+
+# .SYNOPSIS
+#
+#    Complete the -Name argument to Import-Module
+#
+function ImportModuleNameCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = 'Import-Module',
+        Description = 'Complete the -Name argument to Import-Module, for example:  Import-Module -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
+        $tooltip = "Description: {0}`nModuleType: {1}`nPath: {2}" -f $_.Description,$_.ModuleType,$_.Path
+        New-CompletionResult $_.Name $tooltip
+    }
+}
