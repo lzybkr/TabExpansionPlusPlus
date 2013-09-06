@@ -424,36 +424,46 @@ function Register-ArgumentCompleter
 function Update-ArgumentCompleter
 {
     [CmdletBinding()]
-    param([switch]$AsJob,[string[]]$FilePath)
+    param([switch]$AsJob,
+          [string[]]$Path)
 
     Write-Verbose "Scanning for completer files..."
 
     $scriptBlock = {
-        param([System.Collections.Concurrent.ConcurrentQueue[object]]$backgroundResultsQueue)
+        param([System.Collections.Concurrent.ConcurrentQueue[object]]$backgroundResultsQueue,
+              [string[]]$Path)
 
-        if($FilePath)
+        if ($Path)
         {
-    Get-ChildItem $FilePath | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            $Path | ForEach-Object {
+                if (Test-Path -Path $_ -PathType Container)
+                {
+                    Get-ChildItem $_\*.ps1,$_\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+                }
+                else
+                {
+                    Get-ChildItem $_
+                }
+            } | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
         }
         else
         {
+            $modulePaths = $env:PSModulePath -split ';'
+            foreach ($dir in $modulePaths)
+            {
+                Get-ChildItem $dir\*\*.ps1,$dir\*\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            }
 
-        $modulePaths = $env:PSModulePath -split ';'
-        foreach ($dir in $modulePaths)
-        {
-            Get-ChildItem $dir\*\*.ps1,$dir\*\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            foreach ($dir in ($env:PSArgumentCompleterPath -split ';'))
+            {
+                Get-ChildItem $dir\*.ps1,$dir\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            }
         }
-
-        foreach ($dir in ($env:PSArgumentCompleterPath -split ';'))
-        {
-            Get-ChildItem $dir\*.ps1,$dir\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
-        }
-}
     }
 
     if (!$AsJob)
     {
-        & $scriptBlock $backgroundResultsQueue
+        & $scriptBlock $backgroundResultsQueue $Path
         Flush-BackgroundResultsQueue
     }
     else
@@ -464,7 +474,8 @@ function Update-ArgumentCompleter
         $null = $ps.AddScript(${function:Get-CommandWithParameter}.Ast.Extent.Text).Invoke()
         $ps.Commands.Clear()
         $null = $ps.AddScript($scriptBlock).
-            AddParameter('backgroundResultsQueue', $backgroundResultsQueue).BeginInvoke()
+            AddParameter('backgroundResultsQueue', $backgroundResultsQueue).
+            AddParameter('Path', $Path).BeginInvoke()
         # We aren't expecting any results back, so we can ignore the IAsyncResult and
         # just let it get collected eventually.
     }
@@ -489,16 +500,16 @@ function Get-ArgumentCompleter
                 if ($command -and $parameter) { $c += ':' }
                 $description = $descriptions["${c}${parameter}${native}"]
                 $completer = [pscustomobject]@{
-                Command = $command
-                Parameter = $parameter
-                Native = $native
-                Description = $description
-                ScriptBlock = $scriptblock
-                File = Split-Path -Leaf -Path $scriptblock.File
-            }
+                    Command = $command
+                    Parameter = $parameter
+                    Native = $native
+                    Description = $description
+                    ScriptBlock = $scriptblock
+                    File = Split-Path -Leaf -Path $scriptblock.File
+                }
 
-            $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
-            Write-Output $completer
+                $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
+                Write-Output $completer
             }
         }
 
@@ -570,23 +581,25 @@ function Set-TabExpansionOption
 filter LoadArgumentCompleters
 {
     param([Parameter(ValueFromPipeline)]
-          [System.IO.FileInfo]$file,
+          [System.IO.FileInfo]$Path,
 
           [System.Collections.Concurrent.ConcurrentQueue[object]]
           $backgroundResultsQueue)
 
-    if (!(Test-Path $file.FullName))
+    if (!(Test-Path $Path.FullName))
     {
         return
     }
+
+    Write-Verbose "Scanning $($Path.FullName) for completers"
 
     $parseErrors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors)
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($Path.FullName, [ref]$null, [ref]$parseErrors)
     if ($parseErrors.Length -gt 0)
     {
+        Write-Verbose "Parse errors: $($parseErrors | % { $_.ToString(); "\n" })"
         return
     }
-
 
     $paramAsts = $ast.FindAll({
         param($ast)
