@@ -23,4 +23,4 @@ function SmbShareNameParameterCompletion
         ForEach-Object {
             New-CompletionResult $_.Name $_.Description
         }
-} 
+}

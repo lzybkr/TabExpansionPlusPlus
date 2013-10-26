@@ -17,7 +17,7 @@ function Wdac_OdbcDriverNameParameterCompletion
     Wdac\Get-OdbcDriver -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
         New-CompletionResult $_.Name "Name: $($_.Name)"
     }
-} 
+}
 
 
 #
@@ -37,7 +37,7 @@ function Wdac_OdbcDsnNameParameterCompletion
     Wdac\Get-OdbcDsn -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
         New-CompletionResult $_.Name "Name: $($_.Name)"
     }
-} 
+}
 
 
 #
@@ -55,7 +55,6 @@ function Wdac_DriverNameParameterCompletion
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Wdac\Get-OdbcDsn -DriverName "$wordToComplete*" | Sort-Object DriverName | ForEach-Object {
-        New-CompletionResult $_.DriverName "DriverName: $($_.DriverName)" 
+        New-CompletionResult $_.DriverName "DriverName: $($_.DriverName)"
     }
-} 
-
+}

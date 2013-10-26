@@ -22,5 +22,5 @@ function NetIPAddressInterfaceAliasParameterCompleter
     NetTCPIP\Get-NetIPAddress -InterfaceAlias "$wordToComplete*" | Sort-Object InterfaceAlias | ForEach-Object {
         New-CompletionResult $_.InterfaceAlias $_.InterfaceAlias
     }
-} 
+}
 

@@ -18,7 +18,7 @@ function NetAdapter_AdapterNameArgumentCompletion
         ForEach-Object {
             $toolTip = "Index: $($_.IfIndex) Description: $($_.InterfaceDescription)"
             New-CompletionResult $_.Name $toolTip
-        } 
+        }
 }
 
 #
@@ -39,7 +39,7 @@ function NetAdapter_InterfaceIndexArgumentCompletion
         ForEach-Object {
             $toolTip = "Name: $($_.Name) Description: $($_.InterfaceDescription)"
             New-CompletionResult $_.InterfaceIndex $toolTip
-        } 
+        }
 }
 
 #
@@ -60,5 +60,5 @@ function NetAdapter_InterfaceDescriptionArgumentCompletion
         ForEach-Object {
             $toolTip = "Name: $($_.Name) Index: $($_.ifIndex)"
             New-CompletionResult $_.InterfaceDescription $toolTip
-        } 
+        }
 }

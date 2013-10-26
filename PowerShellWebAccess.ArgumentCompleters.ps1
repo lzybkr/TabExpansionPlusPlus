@@ -17,6 +17,6 @@ function PowerShellWebAccess_PswaAuthorizationRuleNameParameterCompleter
     PowerShellWebAccess\Get-PswaAuthorizationRule | Where-Object RuleName -like "$wordToComplete*" | Sort-Object RuleName | ForEach-Object{
         New-CompletionResult $_.RuleName "RuleName: $($_.RuleName)"
     }
-} 
+}
 
 

@@ -44,7 +44,7 @@ function New-CompletionResult
 
           [System.Management.Automation.CompletionResultType]
           $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
-    
+
     if ($ToolTip -eq '')
     {
         $ToolTip = $CompletionText
@@ -365,7 +365,7 @@ function Register-ArgumentCompleter
         [string[]]$CommandName = "",
 
         [Parameter(ParameterSetName="PowerShellSet", Mandatory)]
-        [string]$ParameterName = "",          
+        [string]$ParameterName = "",
 
         [Parameter(Mandatory)]
         [scriptblock]$ScriptBlock,
@@ -424,26 +424,46 @@ function Register-ArgumentCompleter
 function Update-ArgumentCompleter
 {
     [CmdletBinding()]
-    param([switch]$AsJob)
+    param([switch]$AsJob,
+          [string[]]$Path)
+
+    Write-Verbose "Scanning for completer files..."
 
     $scriptBlock = {
-        param([System.Collections.Concurrent.ConcurrentQueue[object]]$backgroundResultsQueue)
+        param([System.Collections.Concurrent.ConcurrentQueue[object]]$backgroundResultsQueue,
+              [string[]]$Path)
 
-        $modulePaths = $env:PSModulePath -split ';'
-        foreach ($dir in $modulePaths)
+        if ($Path)
         {
-            Get-ChildItem $dir\*\*.ps1,$dir\*\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            $Path | ForEach-Object {
+                if (Test-Path -Path $_ -PathType Container)
+                {
+                    Get-ChildItem $_\*.ps1,$_\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+                }
+                else
+                {
+                    Get-ChildItem $_
+                }
+            } | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
         }
-
-        foreach ($dir in ($env:PSArgumentCompleterPath -split ';'))
+        else
         {
-            Get-ChildItem $dir\*.ps1,$dir\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            $modulePaths = $env:PSModulePath -split ';'
+            foreach ($dir in $modulePaths)
+            {
+                Get-ChildItem $dir\*\*.ps1,$dir\*\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            }
+
+            foreach ($dir in ($env:PSArgumentCompleterPath -split ';'))
+            {
+                Get-ChildItem $dir\*.ps1,$dir\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
+            }
         }
     }
 
     if (!$AsJob)
     {
-        & $scriptBlock $backgroundResultsQueue
+        & $scriptBlock $backgroundResultsQueue $Path
         Flush-BackgroundResultsQueue
     }
     else
@@ -454,7 +474,8 @@ function Update-ArgumentCompleter
         $null = $ps.AddScript(${function:Get-CommandWithParameter}.Ast.Extent.Text).Invoke()
         $ps.Commands.Clear()
         $null = $ps.AddScript($scriptBlock).
-            AddParameter('backgroundResultsQueue', $backgroundResultsQueue).BeginInvoke()
+            AddParameter('backgroundResultsQueue', $backgroundResultsQueue).
+            AddParameter('Path', $Path).BeginInvoke()
         # We aren't expecting any results back, so we can ignore the IAsyncResult and
         # just let it get collected eventually.
     }
@@ -468,7 +489,7 @@ function Get-ArgumentCompleter
 {
     [CmdletBinding()]
     param([string[]]$Name = '*')
-    
+
     function WriteCompleters
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
@@ -479,19 +500,19 @@ function Get-ArgumentCompleter
                 if ($command -and $parameter) { $c += ':' }
                 $description = $descriptions["${c}${parameter}${native}"]
                 $completer = [pscustomobject]@{
-                Command = $command
-                Parameter = $parameter
-                Native = $native
-                Description = $description
-                ScriptBlock = $scriptblock
-                File = Split-Path -Leaf -Path $scriptblock.File
-            }
-            
-            $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
-            Write-Output $completer
+                    Command = $command
+                    Parameter = $parameter
+                    Native = $native
+                    Description = $description
+                    ScriptBlock = $scriptblock
+                    File = Split-Path -Leaf -Path $scriptblock.File
+                }
+
+                $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
+                Write-Output $completer
             }
         }
-    
+
         foreach ($pair in $options.CustomArgumentCompleters.GetEnumerator())
         {
             if ($pair.Key -match '^(.*):(.*)$')
@@ -547,7 +568,7 @@ function Set-TabExpansionOption
 
         [object]
         $Value = $true)
-    
+
     $script:options[$option] = $value
 }
 
@@ -560,20 +581,23 @@ function Set-TabExpansionOption
 filter LoadArgumentCompleters
 {
     param([Parameter(ValueFromPipeline)]
-          [System.IO.FileInfo]$file,
+          [System.IO.FileInfo]$Path,
 
-          [System.Collections.Concurrent.ConcurrentQueue[object]]          
+          [System.Collections.Concurrent.ConcurrentQueue[object]]
           $backgroundResultsQueue)
 
-    if (!(Test-Path $file.FullName))
+    if (!(Test-Path $Path.FullName))
     {
         return
     }
 
+    Write-Verbose "Scanning $($Path.FullName) for completers"
+
     $parseErrors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$parseErrors)
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($Path.FullName, [ref]$null, [ref]$parseErrors)
     if ($parseErrors.Length -gt 0)
     {
+        Write-Verbose "Parse errors: $($parseErrors | % { $_.ToString(); "\n" })"
         return
     }
 
@@ -590,7 +614,7 @@ filter LoadArgumentCompleters
             foreach ($attributeAst in $paramBlock.Attributes)
             {
                 if ($attributeAst.TypeName.GetReflectionAttributeType() -eq $type)
-                {                    
+                {
                     & $scriptBlock $paramBlock.Parent.GetScriptBlock()
                     # There may be more than one matching attribute, but we don't care
                     # here - the called script block needs to handle it as appropriate.
@@ -654,6 +678,9 @@ filter LoadArgumentCompleters
             $backgroundResultsQueue.Enqueue([pscustomobject]@{
                 ArgumentCompleter = $true
                 Value = $registerParams})
+
+            Write-Verbose "Registering completer '$($registerParams.CommandName)'"
+            #Write-Verbose "Registering completer '$($registerParams.CommandName)' with parameters: '$($registerParams.Keys -join ',')'"
         }
     }
 
@@ -668,6 +695,9 @@ filter LoadArgumentCompleters
                 Key = $attrInst.Key
                 Value = $result
             }
+
+            Write-Verbose "found initialization function, creating key: '$($attrInst.Key)'"
+
             $backgroundResultsQueue.Enqueue([pscustomobject]@{
                 InitializationData = $true
                 Value = $setCompletionPrivateDataParams})
@@ -688,7 +718,7 @@ function Flush-BackgroundResultsQueue
         $parameters = $item.Value
         if ($item.ArgumentCompleter)
         {
-            Register-ArgumentCompleter @parameters 
+            Register-ArgumentCompleter @parameters
         }
         elseif ($item.InitializationData)
         {
@@ -778,14 +808,14 @@ function TryAttributeArgumentCompletion
 # This function is partly a copy of the V3 TabExpansion2, adding a few
 # capabilities such as completing attribute arguments and excluding hidden
 # files from results.
-# 
+#
 function global:TabExpansion2
 {
     [CmdletBinding(DefaultParameterSetName = 'ScriptInputSet')]
     Param(
         [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 0)]
         [string] $inputScript,
-    
+
         [Parameter(ParameterSetName = 'ScriptInputSet', Mandatory, Position = 1)]
         [int] $cursorColumn,
 
@@ -797,7 +827,7 @@ function global:TabExpansion2
 
         [Parameter(ParameterSetName = 'AstInputSet', Mandatory, Position = 2)]
         [System.Management.Automation.Language.IScriptPosition] $positionOfCursor,
-    
+
         [Parameter(ParameterSetName = 'ScriptInputSet', Position = 2)]
         [Parameter(ParameterSetName = 'AstInputSet', Position = 3)]
         [Hashtable] $options = $null
@@ -896,7 +926,6 @@ function global:TabExpansion2
                 {
                     $null = $results.CompletionMatches.Remove($result)
 
-                    
                     if ($lastIsQuote)
                     {
                         $completionText =
