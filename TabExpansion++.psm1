@@ -30,7 +30,7 @@ $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove =
 #
 function New-CompletionResult
 {
-    param([Parameter(Position=0, ValueFromPipelineByPropertyName, Mandatory)]
+    param([Parameter(Position=0, ValueFromPipelineByPropertyName, Mandatory, ValueFromPipeline)]
           [ValidateNotNullOrEmpty()]
           [string]
           $CompletionText,
@@ -40,35 +40,43 @@ function New-CompletionResult
           $ToolTip,
 
           [string]
-          $ListItemText = $CompletionText,
+          [Parameter(ValueFromPipelineByPropertyName)]
+          $ListItemText,
 
           [System.Management.Automation.CompletionResultType]
           $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
 
-    if ($ToolTip -eq '')
-    {
-        $ToolTip = $CompletionText
-    }
-
-    if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
-    {
-        # Add single quotes for the caller in case they are needed.
-        # We use the parser to robustly determine how it will treat
-        # the argument.  If we end up with too many tokens, or if
-        # the parser found something expandable in the results, we
-        # know quotes are needed.
-
-        $tokens = $null
-        $null = [System.Management.Automation.Language.Parser]::ParseInput("echo $CompletionText", [ref]$tokens, [ref]$null)
-        if ($tokens.Length -ne 3 -or
-            ($tokens[1] -is [System.Management.Automation.Language.StringExpandableToken] -and
-             $tokens[1].Kind -eq [System.Management.Automation.Language.TokenKind]::Generic))
+    process 
+    {    
+        if ($ToolTip -eq '')
         {
-            $CompletionText = "'$CompletionText'"
+            $ToolTip = $CompletionText
         }
+        if (-not $PSBoundParameters.ContainsKey('ListItemText')){
+            $ListItemText = $CompletionText
+        }
+
+        if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
+        {
+            # Add single quotes for the caller in case they are needed.
+            # We use the parser to robustly determine how it will treat
+            # the argument.  If we end up with too many tokens, or if
+            # the parser found something expandable in the results, we
+            # know quotes are needed.
+
+            $tokens = $null
+            $null = [System.Management.Automation.Language.Parser]::ParseInput("echo $CompletionText", [ref]$tokens, [ref]$null)
+            if ($tokens.Length -ne 3 -or
+                ($tokens[1] -is [System.Management.Automation.Language.StringExpandableToken] -and
+                 $tokens[1].Kind -eq [System.Management.Automation.Language.TokenKind]::Generic))
+            {
+                $CompletionText = "'$CompletionText'"
+            }
+        }
+        return New-Object System.Management.Automation.CompletionResult `
+            ($CompletionText,$ListItemText,$CompletionResultType,$ToolTip.Trim())
     }
-    return New-Object System.Management.Automation.CompletionResult `
-        ($CompletionText,$ListItemText,$CompletionResultType,$ToolTip.Trim())
+    
 }
 
 #############################################################################
