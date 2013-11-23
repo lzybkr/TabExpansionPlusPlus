@@ -39,8 +39,8 @@ function New-CompletionResult
           [string]
           $ToolTip,
 
+          [Parameter(Position=2, ValueFromPipelineByPropertyName)]
           [string]
-          [Parameter(ValueFromPipelineByPropertyName)]
           $ListItemText,
 
           [System.Management.Automation.CompletionResultType]
