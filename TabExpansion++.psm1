@@ -48,11 +48,12 @@ function New-CompletionResult
 
     process 
     {    
-        if ($ToolTip -eq '')
+        if (-not $PSBoundParameters.ContainsKey('ToolTip'))
         {
             $ToolTip = $CompletionText
         }
-        if (-not $PSBoundParameters.ContainsKey('ListItemText')){
+        if (-not $PSBoundParameters.ContainsKey('ListItemText'))
+        {
             $ListItemText = $CompletionText
         }
 
@@ -409,6 +410,66 @@ function Register-ArgumentCompleter
         $script:options[$key]["${command}${ParameterName}"] = $ScriptBlock
 
         $script:descriptions["${command}${ParameterName}$Native"] = $Description
+    }
+}
+
+#############################################################################
+#
+# .SYNOPSIS
+#     Tests the registered argument completer
+#
+# .DESCRIPTION
+#
+#
+function Test-ArgumentCompleter
+{
+    [CmdletBinding(DefaultParametersetName='PS')]    
+    param
+    (
+        [Parameter(Mandatory, Position=1, ParameterSetName='PS')]
+        [string] $CommandName
+        ,
+        [Parameter(Mandatory, Position=2, ParameterSetName='PS')]
+        [string] $ParameterName
+        ,
+        [Parameter(ParameterSetName='PS')]
+        [System.Management.Automation.Language.CommandAst] 
+        $commandAst
+        ,
+        [Parameter(ParameterSetName='PS')]
+        [Hashtable] $FakeBoundParameters = @{}
+        ,
+
+        [Parameter(Mandatory, Position=1, ParameterSetName='NativeCommand')]
+        [string] $NativeCommand        
+        ,
+        [Parameter(Position=2, ParameterSetName='NativeCommand')]
+        [Parameter(Position=3, ParameterSetName='PS')]
+        [string] $WordToComplete = ''        
+        
+    )
+
+    if ($PSCmdlet.ParameterSetName -eq 'NativeCommand')
+    {
+        $Tokens = $null
+        $Errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($NativeCommand, [ref] $Tokens, [ref] $Errors)
+        $commandAst = $ast.EndBlock.Statements[0].PipelineElements[0]
+        $command = $commandAst.GetCommandName()
+        $completer = $options.NativeArgumentCompleters[$command]
+        if (-not $Completer)
+        {
+            throw "No argument completer registered for command '$Command' (from $NativeCommand)"
+        }
+        Invoke-Command -ScriptBlock $completer -ArgumentList $WordToComplete,$commandAst
+    }
+    else {
+        $completer = $options.CustomArgumentCompleters["${CommandName}:$ParameterName"]
+        if (-not $Completer)
+        {
+            throw "No argument completer registered for '${CommandName}:$ParameterName'"
+        }
+        Invoke-Command -ScriptBlock $completer -ArgumentList $CommandName,$ParameterName,$WordToComplete, $commandAst, $FakeBoundParameters
     }
 }
 
@@ -1071,4 +1132,4 @@ $backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQue
 Update-ArgumentCompleter -AsJob
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Update-ArgumentCompleter
+                    Set-TabExpansionOption, Test-ArgumentCompleter, Update-ArgumentCompleter
