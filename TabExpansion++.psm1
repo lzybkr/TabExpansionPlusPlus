@@ -461,7 +461,7 @@ function Test-ArgumentCompleter
         {
             throw "No argument completer registered for command '$Command' (from $NativeCommand)"
         }
-        Invoke-Command -ScriptBlock $completer -ArgumentList $WordToComplete,$commandAst
+        & $completer $WordToComplete $commandAst
     }
     else {
         $completer = $options.CustomArgumentCompleters["${CommandName}:$ParameterName"]
@@ -469,7 +469,7 @@ function Test-ArgumentCompleter
         {
             throw "No argument completer registered for '${CommandName}:$ParameterName'"
         }
-        Invoke-Command -ScriptBlock $completer -ArgumentList $CommandName,$ParameterName,$WordToComplete, $commandAst, $FakeBoundParameters
+        & $completer $CommandName $ParameterName $WordToComplete $commandAst $FakeBoundParameters
     }
 }
 
