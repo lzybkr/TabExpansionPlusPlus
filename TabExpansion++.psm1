@@ -419,7 +419,18 @@ function Register-ArgumentCompleter
 #     Tests the registered argument completer
 #
 # .DESCRIPTION
+#     Invokes the registered parameteter completer for a specified command to make it easier to test 
+#     a completer
 #
+# .EXAMPLE
+#  Test-ArgumentCompleter -CommandName Get-Verb -ParameterName Verb -WordToComplete Sta
+#
+# Test what would be completed if Get-Verb -Verb Sta<Tab> was typed at the prompt
+#
+# .EXAMPLE
+#  Test-ArgumentCompleter -NativeCommand Robocopy -WordToComplete /
+#
+# Test what would be completed if Robocopy /<Tab> was typed at the prompt
 #
 function Test-ArgumentCompleter
 {
@@ -439,7 +450,6 @@ function Test-ArgumentCompleter
         [Parameter(ParameterSetName='PS')]
         [Hashtable] $FakeBoundParameters = @{}
         ,
-
         [Parameter(Mandatory, Position=1, ParameterSetName='NativeCommand')]
         [string] $NativeCommand        
         ,
