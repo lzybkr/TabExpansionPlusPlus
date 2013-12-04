@@ -831,8 +831,8 @@ function TryNativeCommandOptionCompletion
             param($ast)
             return $offset -gt $ast.Extent.StartOffset -and
                    $offset -le $ast.Extent.EndOffset -and
-                   (($ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and $ast.Value -eq '--' ) -or
-                    ($ast -is [System.Management.Automation.Language.CommandParameterAst] -and $ast.ParameterName -eq '-'))
+                   ($ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                    ($ast.Value -eq '--' -or $ast.Value -eq '-'))
         }
         $option = $ast.Find($offsetInExtentPredicate, $true)
         if ($option -ne $null)
