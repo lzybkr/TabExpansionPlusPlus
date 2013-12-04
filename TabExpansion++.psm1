@@ -46,8 +46,8 @@ function New-CompletionResult
           [System.Management.Automation.CompletionResultType]
           $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
 
-    process 
-    {    
+    process
+    {
         if ($ToolTip -eq '')
         {
             $ToolTip = $CompletionText
@@ -76,7 +76,7 @@ function New-CompletionResult
         return New-Object System.Management.Automation.CompletionResult `
             ($CompletionText,$ListItemText,$CompletionResultType,$ToolTip.Trim())
     }
-    
+
 }
 
 #############################################################################
@@ -809,6 +809,62 @@ function TryAttributeArgumentCompletion
     catch {}
 }
 
+#############################################################################
+#
+# This function completes native commands options starting with - or --
+# works around a bug in PowerShell that causes it to not complete
+# native command options starting with - or --
+#
+function TryNativeCommandOptionCompletion
+{
+    param(
+        [System.Management.Automation.Language.Ast]$ast,
+        [int]$offset
+    )
+
+    $results = @()
+    $replacementIndex = $offset
+    $replacementLength = 0
+    try{
+    # We want to find any Command element objects where the Ast extent includes $offset
+        $offsetInExtentPredicate = {
+            param($ast)
+            return $offset -gt $ast.Extent.StartOffset -and
+                   $offset -le $ast.Extent.EndOffset -and
+                   (($ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and $ast.Value -eq '--' ) -or
+                    ($ast -is [System.Management.Automation.Language.CommandParameterAst] -and $ast.ParameterName -eq '-'))
+        }
+        $option = $ast.Find($offsetInExtentPredicate, $true)
+        if ($option -ne $null)
+        {
+            $command = $option.Parent -as [System.Management.Automation.Language.CommandAst]
+            if ($command -ne $null)
+            {
+                $nativeCommand = $command.CommandElements[0].Value
+                $nativeCompleter = $options.NativeArgumentCompleters[$nativeCommand]
+
+                if ($nativeCompleter)
+                {
+                    $results = @(& $nativeCompleter $option.ToString() $command)
+                    if ($results.Count -gt 0)
+                    {
+                        $replacementIndex = $option.Extent.StartOffset
+                        $replacementLength = $option.Extent.Text.Length
+                    }
+                }
+            }
+        }
+    }
+    catch{}
+
+    return [PSCustomObject]@{
+        Results = $results
+        ReplacementIndex  = $replacementIndex
+        ReplacementLength = $replacementLength
+    }
+}
+
+
 #endregion Internal utility functions
 
 #############################################################################
@@ -882,34 +938,19 @@ function global:TabExpansion2
 
         # workaround PowerShell bug that case it to not invoking native completers for - or --
         # making it hard to complete options for many commands
-        $command = $ast.EndBlock.Statements[0].PipelineElements[0]
-
-        $nativeCompleter = $options.NativeArgumentCompleters[$command.CommandElements[0].Value]
-
-        if ($nativeCompleter)
+        $nativeCommandResults = TryNativeCommandOptionCompletion -ast $ast -offset $cursorColumn
+        if ($null -ne $nativeCommandResults)
         {
-            $lastCommandElement = $command.CommandElements[-1]
-            $lastArgument = $lastCommandElement.ToString()
-            if ($lastArgument -in '-', '--')
+            $results.ReplacementIndex = $nativeCommandResults.ReplacementIndex
+            $results.ReplacementLength = $nativeCommandResults.ReplacementLength
+            if ($results.CompletionMatches.IsReadOnly)
             {
-                $nativeCompleterResults = & $nativeCompleter $lastArgument $command
-                if ($nativeCompleterResults)
-                {
-                    if($results.CompletionMatches.IsReadOnly)
-                    {
-                        # Workaround where PowerShell returns a readonly collection that we need to add to.
-                        $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
-                        $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
-                    }
-                    foreach($completion in $nativeCompleterResults)
-                    {
-                        $results.CompletionMatches.Add($completion)
-                    }
-                    $results.ReplacementIndex = $lastCommandElement.Extent.StartOffset
-                    $results.ReplacementLength = $lastCommandElement.Extent.Text.Length
-                }
-
+                # Workaround where PowerShell returns a readonly collection that we need to add to.
+                $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
+                $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
             }
+            $nativeCommandResults.Results | ForEach-Object {
+                $results.CompletionMatches.Add($_) }
         }
 
         $attributeResults = TryAttributeArgumentCompletion $ast $cursorColumn
