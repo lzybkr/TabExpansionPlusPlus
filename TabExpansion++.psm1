@@ -46,16 +46,10 @@ function New-CompletionResult
           [System.Management.Automation.CompletionResultType]
           $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
 
-    process 
-    {    
-        if (-not $PSBoundParameters.ContainsKey('ToolTip'))
-        {
-            $ToolTip = $CompletionText
-        }
-        if (-not $PSBoundParameters.ContainsKey('ListItemText'))
-        {
-            $ListItemText = $CompletionText
-        }
+    process
+    {
+        $toolTipToUse = if ($ToolTip -eq '') { $CompletionText } else { $ToolTip }
+        $listItemToUse = if ($ListItemText -eq '') { $CompletionText } else { $ListItemText }
 
         if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
         {
@@ -75,9 +69,9 @@ function New-CompletionResult
             }
         }
         return New-Object System.Management.Automation.CompletionResult `
-            ($CompletionText,$ListItemText,$CompletionResultType,$ToolTip.Trim())
+            ($CompletionText,$listItemToUse,$CompletionResultType,$toolTipToUse.Trim())
     }
-    
+
 }
 
 #############################################################################
@@ -419,7 +413,7 @@ function Register-ArgumentCompleter
 #     Tests the registered argument completer
 #
 # .DESCRIPTION
-#     Invokes the registered parameteter completer for a specified command to make it easier to test 
+#     Invokes the registered parameteter completer for a specified command to make it easier to test
 #     a completer
 #
 # .EXAMPLE
@@ -434,7 +428,7 @@ function Register-ArgumentCompleter
 #
 function Test-ArgumentCompleter
 {
-    [CmdletBinding(DefaultParametersetName='PS')]    
+    [CmdletBinding(DefaultParametersetName='PS')]
     param
     (
         [Parameter(Mandatory, Position=1, ParameterSetName='PS')]
@@ -444,19 +438,19 @@ function Test-ArgumentCompleter
         [string] $ParameterName
         ,
         [Parameter(ParameterSetName='PS')]
-        [System.Management.Automation.Language.CommandAst] 
+        [System.Management.Automation.Language.CommandAst]
         $commandAst
         ,
         [Parameter(ParameterSetName='PS')]
         [Hashtable] $FakeBoundParameters = @{}
         ,
         [Parameter(Mandatory, Position=1, ParameterSetName='NativeCommand')]
-        [string] $NativeCommand        
+        [string] $NativeCommand
         ,
         [Parameter(Position=2, ParameterSetName='NativeCommand')]
         [Parameter(Position=3, ParameterSetName='PS')]
-        [string] $WordToComplete = ''        
-        
+        [string] $WordToComplete = ''
+
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'NativeCommand')
