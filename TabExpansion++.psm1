@@ -880,6 +880,38 @@ function global:TabExpansion2
             $cursorColumn = $positionOfCursor.Offset
         }
 
+        # workaround PowerShell bug that case it to not invoking native completers for - or --
+        # making it hard to complete options for many commands
+        $command = $ast.EndBlock.Statements[0].PipelineElements[0]
+
+        $nativeCompleter = $options.NativeArgumentCompleters[$command.CommandElements[0].Value]
+
+        if ($nativeCompleter)
+        {
+            $lastCommandElement = $command.CommandElements[-1]
+            $lastArgument = $lastCommandElement.ToString()
+            if ($lastArgument -in '-', '--')
+            {
+                $nativeCompleterResults = & $nativeCompleter $lastArgument $command
+                if ($nativeCompleterResults)
+                {
+                    if($results.CompletionMatches.IsReadOnly)
+                    {
+                        # Workaround where PowerShell returns a readonly collection that we need to add to.
+                        $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
+                        $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
+                    }
+                    foreach($completion in $nativeCompleterResults)
+                    {
+                        $results.CompletionMatches.Add($completion)
+                    }
+                    $results.ReplacementIndex = $lastCommandElement.Extent.StartOffset
+                    $results.ReplacementLength = $lastCommandElement.Extent.Text.Length
+                }
+
+            }
+        }
+
         $attributeResults = TryAttributeArgumentCompletion $ast $cursorColumn
         if ($null -ne $attributeResults)
         {
