@@ -892,14 +892,13 @@ function TryNativeCommandOptionCompletion
     $replacementLength = 0
     try{
     # We want to find any Command element objects where the Ast extent includes $offset
-        $offsetInExtentPredicate = {
+        $offsetInOptionExtentPredicate = {
             param($ast)
             return $offset -gt $ast.Extent.StartOffset -and
                    $offset -le $ast.Extent.EndOffset -and
-                   ($ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and 
-                    ($ast.Value -eq '--' -or $ast.Value -eq '-'))
+                   $ast.Extent.Text -in '-','--'
         }
-        $option = $ast.Find($offsetInExtentPredicate, $true)
+        $option = $ast.Find($offsetInOptionExtentPredicate, $true)
         if ($option -ne $null)
         {
             $command = $option.Parent -as [System.Management.Automation.Language.CommandAst]
