@@ -48,13 +48,8 @@ function New-CompletionResult
 
     process
     {
-        if ($ToolTip -eq '')
-        {
-            $ToolTip = $CompletionText
-        }
-        if (-not $PSBoundParameters.ContainsKey('ListItemText')){
-            $ListItemText = $CompletionText
-        }
+        $toolTipToUse = if ($ToolTip -eq '') { $CompletionText } else { $ToolTip }
+        $listItemToUse = if ($ListItemText -eq '') { $CompletionText } else { $ListItemText }
 
         if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
         {
@@ -74,7 +69,7 @@ function New-CompletionResult
             }
         }
         return New-Object System.Management.Automation.CompletionResult `
-            ($CompletionText,$ListItemText,$CompletionResultType,$ToolTip.Trim())
+            ($CompletionText,$listItemToUse,$CompletionResultType,$toolTipToUse.Trim())
     }
 
 }
@@ -409,6 +404,76 @@ function Register-ArgumentCompleter
         $script:options[$key]["${command}${ParameterName}"] = $ScriptBlock
 
         $script:descriptions["${command}${ParameterName}$Native"] = $Description
+    }
+}
+
+#############################################################################
+#
+# .SYNOPSIS
+#     Tests the registered argument completer
+#
+# .DESCRIPTION
+#     Invokes the registered parameteter completer for a specified command to make it easier to test
+#     a completer
+#
+# .EXAMPLE
+#  Test-ArgumentCompleter -CommandName Get-Verb -ParameterName Verb -WordToComplete Sta
+#
+# Test what would be completed if Get-Verb -Verb Sta<Tab> was typed at the prompt
+#
+# .EXAMPLE
+#  Test-ArgumentCompleter -NativeCommand Robocopy -WordToComplete /
+#
+# Test what would be completed if Robocopy /<Tab> was typed at the prompt
+#
+function Test-ArgumentCompleter
+{
+    [CmdletBinding(DefaultParametersetName='PS')]
+    param
+    (
+        [Parameter(Mandatory, Position=1, ParameterSetName='PS')]
+        [string] $CommandName
+        ,
+        [Parameter(Mandatory, Position=2, ParameterSetName='PS')]
+        [string] $ParameterName
+        ,
+        [Parameter(ParameterSetName='PS')]
+        [System.Management.Automation.Language.CommandAst]
+        $commandAst
+        ,
+        [Parameter(ParameterSetName='PS')]
+        [Hashtable] $FakeBoundParameters = @{}
+        ,
+        [Parameter(Mandatory, Position=1, ParameterSetName='NativeCommand')]
+        [string] $NativeCommand
+        ,
+        [Parameter(Position=2, ParameterSetName='NativeCommand')]
+        [Parameter(Position=3, ParameterSetName='PS')]
+        [string] $WordToComplete = ''
+
+    )
+
+    if ($PSCmdlet.ParameterSetName -eq 'NativeCommand')
+    {
+        $Tokens = $null
+        $Errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($NativeCommand, [ref] $Tokens, [ref] $Errors)
+        $commandAst = $ast.EndBlock.Statements[0].PipelineElements[0]
+        $command = $commandAst.GetCommandName()
+        $completer = $options.NativeArgumentCompleters[$command]
+        if (-not $Completer)
+        {
+            throw "No argument completer registered for command '$Command' (from $NativeCommand)"
+        }
+        & $completer $WordToComplete $commandAst
+    }
+    else {
+        $completer = $options.CustomArgumentCompleters["${CommandName}:$ParameterName"]
+        if (-not $Completer)
+        {
+            throw "No argument completer registered for '${CommandName}:$ParameterName'"
+        }
+        & $completer $CommandName $ParameterName $WordToComplete $commandAst $FakeBoundParameters
     }
 }
 
@@ -831,7 +896,7 @@ function TryNativeCommandOptionCompletion
             param($ast)
             return $offset -gt $ast.Extent.StartOffset -and
                    $offset -le $ast.Extent.EndOffset -and
-                   ($ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                   ($ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and 
                     ($ast.Value -eq '--' -or $ast.Value -eq '-'))
         }
         $option = $ast.Find($offsetInExtentPredicate, $true)
@@ -840,7 +905,7 @@ function TryNativeCommandOptionCompletion
             $command = $option.Parent -as [System.Management.Automation.Language.CommandAst]
             if ($command -ne $null)
             {
-                $nativeCommand = $command.CommandElements[0].Value
+                $nativeCommand = [System.IO.Path]::GetFileNameWithoutExtension($command.CommandElements[0].Value)
                 $nativeCompleter = $options.NativeArgumentCompleters[$nativeCommand]
 
                 if ($nativeCompleter)
@@ -1144,4 +1209,5 @@ $backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQue
 Update-ArgumentCompleter -AsJob
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Update-ArgumentCompleter
+                    Set-TabExpansionOption, Test-ArgumentCompleter, Update-ArgumentCompleter, New-CompletionResult
+
