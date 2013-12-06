@@ -46,15 +46,10 @@ function New-CompletionResult
           [System.Management.Automation.CompletionResultType]
           $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
 
-    process 
-    {    
-        if ($ToolTip -eq '')
-        {
-            $ToolTip = $CompletionText
-        }
-        if (-not $PSBoundParameters.ContainsKey('ListItemText')){
-            $ListItemText = $CompletionText
-        }
+    process
+    {
+        $toolTipToUse = if ($ToolTip -eq '') { $CompletionText } else { $ToolTip }
+        $listItemToUse = if ($ListItemText -eq '') { $CompletionText } else { $ListItemText }
 
         if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
         {
@@ -74,9 +69,9 @@ function New-CompletionResult
             }
         }
         return New-Object System.Management.Automation.CompletionResult `
-            ($CompletionText,$ListItemText,$CompletionResultType,$ToolTip.Trim())
+            ($CompletionText,$listItemToUse,$CompletionResultType,$toolTipToUse.Trim())
     }
-    
+
 }
 
 #############################################################################
@@ -409,6 +404,76 @@ function Register-ArgumentCompleter
         $script:options[$key]["${command}${ParameterName}"] = $ScriptBlock
 
         $script:descriptions["${command}${ParameterName}$Native"] = $Description
+    }
+}
+
+#############################################################################
+#
+# .SYNOPSIS
+#     Tests the registered argument completer
+#
+# .DESCRIPTION
+#     Invokes the registered parameteter completer for a specified command to make it easier to test
+#     a completer
+#
+# .EXAMPLE
+#  Test-ArgumentCompleter -CommandName Get-Verb -ParameterName Verb -WordToComplete Sta
+#
+# Test what would be completed if Get-Verb -Verb Sta<Tab> was typed at the prompt
+#
+# .EXAMPLE
+#  Test-ArgumentCompleter -NativeCommand Robocopy -WordToComplete /
+#
+# Test what would be completed if Robocopy /<Tab> was typed at the prompt
+#
+function Test-ArgumentCompleter
+{
+    [CmdletBinding(DefaultParametersetName='PS')]
+    param
+    (
+        [Parameter(Mandatory, Position=1, ParameterSetName='PS')]
+        [string] $CommandName
+        ,
+        [Parameter(Mandatory, Position=2, ParameterSetName='PS')]
+        [string] $ParameterName
+        ,
+        [Parameter(ParameterSetName='PS')]
+        [System.Management.Automation.Language.CommandAst]
+        $commandAst
+        ,
+        [Parameter(ParameterSetName='PS')]
+        [Hashtable] $FakeBoundParameters = @{}
+        ,
+        [Parameter(Mandatory, Position=1, ParameterSetName='NativeCommand')]
+        [string] $NativeCommand
+        ,
+        [Parameter(Position=2, ParameterSetName='NativeCommand')]
+        [Parameter(Position=3, ParameterSetName='PS')]
+        [string] $WordToComplete = ''
+
+    )
+
+    if ($PSCmdlet.ParameterSetName -eq 'NativeCommand')
+    {
+        $Tokens = $null
+        $Errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($NativeCommand, [ref] $Tokens, [ref] $Errors)
+        $commandAst = $ast.EndBlock.Statements[0].PipelineElements[0]
+        $command = $commandAst.GetCommandName()
+        $completer = $options.NativeArgumentCompleters[$command]
+        if (-not $Completer)
+        {
+            throw "No argument completer registered for command '$Command' (from $NativeCommand)"
+        }
+        & $completer $WordToComplete $commandAst
+    }
+    else {
+        $completer = $options.CustomArgumentCompleters["${CommandName}:$ParameterName"]
+        if (-not $Completer)
+        {
+            throw "No argument completer registered for '${CommandName}:$ParameterName'"
+        }
+        & $completer $CommandName $ParameterName $WordToComplete $commandAst $FakeBoundParameters
     }
 }
 
@@ -809,6 +874,61 @@ function TryAttributeArgumentCompletion
     catch {}
 }
 
+#############################################################################
+#
+# This function completes native commands options starting with - or --
+# works around a bug in PowerShell that causes it to not complete
+# native command options starting with - or --
+#
+function TryNativeCommandOptionCompletion
+{
+    param(
+        [System.Management.Automation.Language.Ast]$ast,
+        [int]$offset
+    )
+
+    $results = @()
+    $replacementIndex = $offset
+    $replacementLength = 0
+    try{
+    # We want to find any Command element objects where the Ast extent includes $offset
+        $offsetInOptionExtentPredicate = {
+            param($ast)
+            return $offset -gt $ast.Extent.StartOffset -and
+                   $offset -le $ast.Extent.EndOffset -and
+                   $ast.Extent.Text -in '-','--'
+        }
+        $option = $ast.Find($offsetInOptionExtentPredicate, $true)
+        if ($option -ne $null)
+        {
+            $command = $option.Parent -as [System.Management.Automation.Language.CommandAst]
+            if ($command -ne $null)
+            {
+                $nativeCommand = [System.IO.Path]::GetFileNameWithoutExtension($command.CommandElements[0].Value)
+                $nativeCompleter = $options.NativeArgumentCompleters[$nativeCommand]
+
+                if ($nativeCompleter)
+                {
+                    $results = @(& $nativeCompleter $option.ToString() $command)
+                    if ($results.Count -gt 0)
+                    {
+                        $replacementIndex = $option.Extent.StartOffset
+                        $replacementLength = $option.Extent.Text.Length
+                    }
+                }
+            }
+        }
+    }
+    catch{}
+
+    return [PSCustomObject]@{
+        Results = $results
+        ReplacementIndex  = $replacementIndex
+        ReplacementLength = $replacementLength
+    }
+}
+
+
 #endregion Internal utility functions
 
 #############################################################################
@@ -878,6 +998,23 @@ function global:TabExpansion2
         else
         {
             $cursorColumn = $positionOfCursor.Offset
+        }
+
+        # workaround PowerShell bug that case it to not invoking native completers for - or --
+        # making it hard to complete options for many commands
+        $nativeCommandResults = TryNativeCommandOptionCompletion -ast $ast -offset $cursorColumn
+        if ($null -ne $nativeCommandResults)
+        {
+            $results.ReplacementIndex = $nativeCommandResults.ReplacementIndex
+            $results.ReplacementLength = $nativeCommandResults.ReplacementLength
+            if ($results.CompletionMatches.IsReadOnly)
+            {
+                # Workaround where PowerShell returns a readonly collection that we need to add to.
+                $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
+                $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
+            }
+            $nativeCommandResults.Results | ForEach-Object {
+                $results.CompletionMatches.Add($_) }
         }
 
         $attributeResults = TryAttributeArgumentCompletion $ast $cursorColumn
@@ -1071,4 +1208,5 @@ $backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQue
 Update-ArgumentCompleter -AsJob
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Update-ArgumentCompleter
+                    Set-TabExpansionOption, Test-ArgumentCompleter, Update-ArgumentCompleter, New-CompletionResult
+
