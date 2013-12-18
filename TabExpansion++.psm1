@@ -874,6 +874,61 @@ function TryAttributeArgumentCompletion
     catch {}
 }
 
+#############################################################################
+#
+# This function completes native commands options starting with - or --
+# works around a bug in PowerShell that causes it to not complete
+# native command options starting with - or --
+#
+function TryNativeCommandOptionCompletion
+{
+    param(
+        [System.Management.Automation.Language.Ast]$ast,
+        [int]$offset
+    )
+
+    $results = @()
+    $replacementIndex = $offset
+    $replacementLength = 0
+    try{
+    # We want to find any Command element objects where the Ast extent includes $offset
+        $offsetInOptionExtentPredicate = {
+            param($ast)
+            return $offset -gt $ast.Extent.StartOffset -and
+                   $offset -le $ast.Extent.EndOffset -and
+                   $ast.Extent.Text -in '-','--'
+        }
+        $option = $ast.Find($offsetInOptionExtentPredicate, $true)
+        if ($option -ne $null)
+        {
+            $command = $option.Parent -as [System.Management.Automation.Language.CommandAst]
+            if ($command -ne $null)
+            {
+                $nativeCommand = [System.IO.Path]::GetFileNameWithoutExtension($command.CommandElements[0].Value)
+                $nativeCompleter = $options.NativeArgumentCompleters[$nativeCommand]
+
+                if ($nativeCompleter)
+                {
+                    $results = @(& $nativeCompleter $option.ToString() $command)
+                    if ($results.Count -gt 0)
+                    {
+                        $replacementIndex = $option.Extent.StartOffset
+                        $replacementLength = $option.Extent.Text.Length
+                    }
+                }
+            }
+        }
+    }
+    catch{}
+
+    return [PSCustomObject]@{
+        Results = $results
+        ReplacementIndex  = $replacementIndex
+        ReplacementLength = $replacementLength
+    }
+}
+
+
 #endregion Internal utility functions
 
 #############################################################################
@@ -943,6 +998,23 @@ function global:TabExpansion2
         else
         {
             $cursorColumn = $positionOfCursor.Offset
+        }
+
+        # workaround PowerShell bug that case it to not invoking native completers for - or --
+        # making it hard to complete options for many commands
+        $nativeCommandResults = TryNativeCommandOptionCompletion -ast $ast -offset $cursorColumn
+        if ($null -ne $nativeCommandResults)
+        {
+            $results.ReplacementIndex = $nativeCommandResults.ReplacementIndex
+            $results.ReplacementLength = $nativeCommandResults.ReplacementLength
+            if ($results.CompletionMatches.IsReadOnly)
+            {
+                # Workaround where PowerShell returns a readonly collection that we need to add to.
+                $collection = new-object System.Collections.ObjectModel.Collection[System.Management.Automation.CompletionResult]
+                $results.GetType().GetProperty('CompletionMatches').SetValue($results, $collection)
+            }
+            $nativeCommandResults.Results | ForEach-Object {
+                $results.CompletionMatches.Add($_) }
         }
 
         $attributeResults = TryAttributeArgumentCompletion $ast $cursorColumn
@@ -1136,4 +1208,5 @@ $backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQue
 Update-ArgumentCompleter -AsJob
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Test-ArgumentCompleter, Update-ArgumentCompleter
+                    Set-TabExpansionOption, Test-ArgumentCompleter, Update-ArgumentCompleter, New-CompletionResult
+
