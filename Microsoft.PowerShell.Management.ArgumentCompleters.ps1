@@ -103,3 +103,43 @@ Complete item types (in FileSystem/ ActiveDirectory), for example:
             New-CompletionResult $_ -ToolTip "Create $_"
         }
 }
+
+
+#
+# .SYNOPSIS
+#
+#     Completer for *-ControlPanelItem -Name parameter
+#
+function ControlPanelItemNameCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = {Get-CommandWithParameter -Noun ControlPanelItem -ParameterName Name},
+        Description = 'Complete the -Name argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-ControlPanelItem -Name "*$wordToComplete*" | ForEach-Object {
+        New-CompletionResult $_.Name $_.Description
+    }
+}
+
+
+#
+# .SYNOPSIS
+#
+#     Completer for *-ControlPanelItem -CanonicalName parameter
+#
+function ControlPanelItemCanonicalNameCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'CanonicalName',
+        Command = {Get-CommandWithParameter -Noun ControlPanelItem -ParameterName CanonicalName},
+        Description = 'Complete the -CanonicalName argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-ControlPanelItem -CanonicalName "*$wordToComplete*" | ForEach-Object {
+        New-CompletionResult $_.CanonicalName $_.Description
+    }
+}
