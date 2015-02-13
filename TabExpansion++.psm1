@@ -378,10 +378,10 @@ function Register-ArgumentCompleter
         [Parameter(ParameterSetName="NativeSet")]
         [switch]$Native)
 
+    $fnDefn = $ScriptBlock.Ast -as [System.Management.Automation.Language.FunctionDefinitionAst]
     if (!$Description)
     {
-        # See if the script block is really a function, if so, use the function name.
-        $fnDefn = $ScriptBlock.Ast.Parent -as [System.Management.Automation.Language.FunctionDefinitionAst]
+        # See if the script block is really a function, if so, use the function name.        
         $Description = if ($fnDefn -ne $null) { $fnDefn.Name } else { "" }
     }
 
@@ -390,7 +390,12 @@ function Register-ArgumentCompleter
         # Make an unbound copy of the script block so it has access to TabExpansion++ when invoked.
         # We can skip this step if we created the script block (Register-ArgumentCompleter was
         # called internally).
-        $ScriptBlock = $ScriptBlock.Ast.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
+        if ($fnDefn -ne $null){
+            $ScriptBlock = $ScriptBlock.Ast.Body.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
+        }
+        else {
+            $ScriptBlock = $ScriptBlock.Ast.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
+        }
     }
 
     foreach ($command in $CommandName)
