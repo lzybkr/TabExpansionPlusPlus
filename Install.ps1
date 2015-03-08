@@ -7,6 +7,7 @@ $fileList = @(
     'Dism.ArgumentCompleters.ps1',
     'DnsClient.ArgumentCompleters.ps1',
     'Hyper-V.ArgumentCompleters.ps1',
+    'License.txt',
     'Microsoft.PowerShell.Core.ArgumentCompleters.ps1',
     'Microsoft.PowerShell.Diagnostics.ArgumentCompleters.ps1',
     'Microsoft.PowerShell.Management.ArgumentCompleters.ps1',

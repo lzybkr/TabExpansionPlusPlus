@@ -11,10 +11,17 @@ ModuleVersion = '1.0'
 GUID = '2e15ae89-6988-46fc-9996-d2c13257c6f7'
 
 # Author of this module
-Author = 'Jason Shirk (MSFT)'
+Author = 'Jason Shirk'
+
+# Copyright
+Copyright = '(c) 2013. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Create custom tab completers'
+Description = 'TabExpansion++ extends the tab expansion and Intellisense features of
+PowerShell to help make PowerShell scripters more productive.
+
+You can easily create your own custom argument completers. There are many
+examples included in the module for many commands you may already use.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '3.0'
