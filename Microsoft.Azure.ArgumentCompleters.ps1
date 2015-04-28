@@ -44,6 +44,47 @@ function StorageAccount_StorageAccountNameCompleter
 #
 # .SYNOPSIS
 #
+#    Auto-complete the -Name parameter value for Azure PowerShell storage container cmdlets.
+#
+# .NOTES
+#    
+#    Created by Trevor Sullivan <pcgeek86@gmail.com>
+#    http://trevorsullivan.net
+#
+function AzureStorage_StorageContainerNameCompleter
+{
+    [ArgumentCompleter(
+        Parameter = 'Name',
+        Command = { Get-CommandWithParameter -Module Azure -ParameterName Name -Name *container*; },
+        Description = 'Complete the -Name parameter value for Azure cmdlets:  Get-AzureStorageContainer -Context $Context -Name <TAB>'
+    )]
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $CacheKey = 'AzureStorage_ContainerNameCache';
+    $ContainerNameCache = Get-CompletionPrivateData -Key $CacheKey;
+
+    ### Return the cached value if it has not expired
+    if ($ContainerNameCache) {
+        return $ContainerNameCache;
+    }
+
+    $ContainerList = Get-AzureStorageContainer -Context $fakeBoundParameter['Context'] | Where-Object -FilterScript { $PSItem.Name -match ${wordToComplete}; } | ForEach-Object {
+        $CompletionResult = @{
+            CompletionText = $PSItem.Name;
+            ToolTip = 'Storage Container "{0}" in "{1}" Storage Account.' -f $PSItem.Name, $fakeBoundParameter['Context'].StorageAccountName;
+            ListItemText = '{0} ({1})' -f $PSItem.Name, $fakeBoundParameter['Context'].StorageAccountName;
+            CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue;
+            };
+        New-CompletionResult @CompletionResult;
+    }
+
+    Set-CompletionPrivateData -Key $CacheKey -Value $ContainerList;
+    return $ContainerList;
+}
+
+#
+# .SYNOPSIS
+#
 #    Auto-complete the -ServiceName parameter value for Azure PowerShell cmdlets.
 #
 # .NOTES
