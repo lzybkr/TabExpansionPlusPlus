@@ -145,7 +145,6 @@ function Set-CompletionPrivateData
         Value = $Value;
         ExpirationTime = (Get-Date).AddSeconds($ExpirationSeconds);
         };
-    Add-Content -Path TabExpansion.log -Value ('Setting cache expiration time to: {0}. Key is: {1}' -f $Cache.ExpirationTime, $Key);
     $completionPrivateData[$key] = $Cache;
 }
 
