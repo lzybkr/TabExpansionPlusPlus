@@ -134,9 +134,19 @@ function Set-CompletionPrivateData
         $Key,
 
         [object]
-        $Value)
+        $Value,
 
-    $completionPrivateData[$key] = $value
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $ExpirationSeconds = 20
+        )
+
+    $Cache = [PSCustomObject]@{
+        Value = $Value;
+        ExpirationTime = (Get-Date).AddSeconds($ExpirationSeconds);
+        };
+    Add-Content -Path TabExpansion.log -Value ('Setting cache expiration time to: {0}. Key is: {1}' -f $Cache.ExpirationTime, $Key);
+    $completionPrivateData[$key] = $Cache;
 }
 
 #############################################################################
@@ -148,8 +158,12 @@ function Get-CompletionPrivateData
         [string]
         $Key)
 
-    Flush-BackgroundResultsQueue
-    return $completionPrivateData[$key]
+    Flush-BackgroundResultsQueue;
+
+    $cacheValue = $completionPrivateData[$key];
+    if ((Get-Date) -lt $cacheValue.ExpirationTime) {
+        return $cacheValue.Value;
+    }
 }
 
 #############################################################################
@@ -562,7 +576,15 @@ function Update-ArgumentCompleter
 #############################################################################
 #
 # .SYNOPSIS
+# Retrieves a list of argument completers that have been loaded into the
+# PowerShell session.
 #
+# .PARAMETER Name
+# The name of the argument complete to retrieve. This parameter supports 
+# wildcards (asterisk).
+#
+# .EXAMPLE
+# Get-ArgumentComplete
 function Get-ArgumentCompleter
 {
     [CmdletBinding()]
@@ -796,7 +818,7 @@ function Flush-BackgroundResultsQueue
         $parameters = $item.Value
         if ($item.ArgumentCompleter)
         {
-            Register-ArgumentCompleter @parameters
+            TabExpansion++\Register-ArgumentCompleter @parameters
         }
         elseif ($item.InitializationData)
         {

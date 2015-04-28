@@ -21,6 +21,8 @@ function StorageAccount_StorageAccountNameCompleter
 
     $CacheKey = 'StorageAccount_StorageAccountNameCache';
     $StorageAccountNameCache = Get-CompletionPrivateData -Key $CacheKey;
+
+    ### Return the cached value if it has not expired
     if ($StorageAccountNameCache) {
         return $StorageAccountNameCache;
     }
