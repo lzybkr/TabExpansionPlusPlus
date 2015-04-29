@@ -44,14 +44,22 @@ function New-CompletionResult
           $ListItemText,
 
           [System.Management.Automation.CompletionResultType]
-          $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
+          $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue,
+ 
+          [Parameter(Mandatory = $false)]
+          [switch] $NoQuotes = $false
+          )
 
     process
     {
         $toolTipToUse = if ($ToolTip -eq '') { $CompletionText } else { $ToolTip }
         $listItemToUse = if ($ListItemText -eq '') { $CompletionText } else { $ListItemText }
 
-        if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
+        # If the caller explicitly requests that quotes
+        # not be included, via the -NoQuotes parameter,
+        # then skip adding quotes.
+
+        if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue -and -not $NoQuotes)
         {
             # Add single quotes for the caller in case they are needed.
             # We use the parser to robustly determine how it will treat
@@ -138,14 +146,14 @@ function Set-CompletionPrivateData
 
         [ValidateNotNullOrEmpty()]
         [int]
-        $ExpirationSeconds = 20
+        $ExpirationSeconds = 604800
         )
 
     $Cache = [PSCustomObject]@{
-        Value = $Value;
-        ExpirationTime = (Get-Date).AddSeconds($ExpirationSeconds);
-        };
-    $completionPrivateData[$key] = $Cache;
+        Value = $Value
+        ExpirationTime = (Get-Date).AddSeconds($ExpirationSeconds)
+        }
+    $completionPrivateData[$key] = $Cache
 }
 
 #############################################################################
@@ -159,9 +167,9 @@ function Get-CompletionPrivateData
 
     Flush-BackgroundResultsQueue;
 
-    $cacheValue = $completionPrivateData[$key];
+    $cacheValue = $completionPrivateData[$key]
     if ((Get-Date) -lt $cacheValue.ExpirationTime) {
-        return $cacheValue.Value;
+        return $cacheValue.Value
     }
 }
 
@@ -583,7 +591,7 @@ function Update-ArgumentCompleter
 # wildcards (asterisk).
 #
 # .EXAMPLE
-# Get-ArgumentComplete
+# Get-ArgumentCompleter -Name *Azure*;
 function Get-ArgumentCompleter
 {
     [CmdletBinding()]
