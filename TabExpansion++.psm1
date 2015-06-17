@@ -44,14 +44,22 @@ function New-CompletionResult
           $ListItemText,
 
           [System.Management.Automation.CompletionResultType]
-          $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue)
+          $CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue,
+ 
+          [Parameter(Mandatory = $false)]
+          [switch] $NoQuotes = $false
+          )
 
     process
     {
         $toolTipToUse = if ($ToolTip -eq '') { $CompletionText } else { $ToolTip }
         $listItemToUse = if ($ListItemText -eq '') { $CompletionText } else { $ListItemText }
 
-        if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue)
+        # If the caller explicitly requests that quotes
+        # not be included, via the -NoQuotes parameter,
+        # then skip adding quotes.
+
+        if ($CompletionResultType -eq [System.Management.Automation.CompletionResultType]::ParameterValue -and -not $NoQuotes)
         {
             # Add single quotes for the caller in case they are needed.
             # We use the parser to robustly determine how it will treat
@@ -134,9 +142,18 @@ function Set-CompletionPrivateData
         $Key,
 
         [object]
-        $Value)
+        $Value,
 
-    $completionPrivateData[$key] = $value
+        [ValidateNotNullOrEmpty()]
+        [int]
+        $ExpirationSeconds = 604800
+        )
+
+    $Cache = [PSCustomObject]@{
+        Value = $Value
+        ExpirationTime = (Get-Date).AddSeconds($ExpirationSeconds)
+        }
+    $completionPrivateData[$key] = $Cache
 }
 
 #############################################################################
@@ -148,8 +165,12 @@ function Get-CompletionPrivateData
         [string]
         $Key)
 
-    Flush-BackgroundResultsQueue
-    return $completionPrivateData[$key]
+    Flush-BackgroundResultsQueue;
+
+    $cacheValue = $completionPrivateData[$key]
+    if ((Get-Date) -lt $cacheValue.ExpirationTime) {
+        return $cacheValue.Value
+    }
 }
 
 #############################################################################
@@ -562,7 +583,15 @@ function Update-ArgumentCompleter
 #############################################################################
 #
 # .SYNOPSIS
+# Retrieves a list of argument completers that have been loaded into the
+# PowerShell session.
 #
+# .PARAMETER Name
+# The name of the argument complete to retrieve. This parameter supports 
+# wildcards (asterisk).
+#
+# .EXAMPLE
+# Get-ArgumentCompleter -Name *Azure*;
 function Get-ArgumentCompleter
 {
     [CmdletBinding()]
@@ -796,7 +825,7 @@ function Flush-BackgroundResultsQueue
         $parameters = $item.Value
         if ($item.ArgumentCompleter)
         {
-            Register-ArgumentCompleter @parameters
+            TabExpansion++\Register-ArgumentCompleter @parameters
         }
         elseif ($item.InitializationData)
         {
