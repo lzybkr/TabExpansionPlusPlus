@@ -930,7 +930,7 @@ function TryNativeCommandOptionCompletion
             param($ast)
             return $offset -gt $ast.Extent.StartOffset -and
                    $offset -le $ast.Extent.EndOffset -and
-                   $ast.Extent.Text -in '-','--'
+                   $ast.Extent.Text.StartsWith('-')
         }
         $option = $ast.Find($offsetInOptionExtentPredicate, $true)
         if ($option -ne $null)
