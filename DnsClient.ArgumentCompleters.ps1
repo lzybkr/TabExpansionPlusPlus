@@ -7,11 +7,6 @@
 #
 function DnsClientInterfaceAliasParameterCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'InterfaceAlias',
-        Command = {Get-CommandWithParameter -Module DnsClient -ParameterName InterfaceAlias},
-        Description = 'Complete the -InterfaceAlias arguments to DnsClient module cmdlets. For example:  Get-DnsClient -InterfaceAlias <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     DnsClient\Get-DnsClient -InterfaceAlias "$wordToComplete*" | Sort-Object InterfaceAlias | ForEach-Object {
@@ -19,3 +14,9 @@ function DnsClientInterfaceAliasParameterCompleter
     }
 }
 
+
+Register-ArgumentCompleter `
+    -Command (Get-CommandWithParameter -Module DnsClient -ParameterName InterfaceAlias) `
+    -Parameter 'InterfaceAlias' `
+    -Description 'Complete the -InterfaceAlias arguments to DnsClient module cmdlets. For example:  Get-DnsClient -InterfaceAlias <TAB>' `
+    -ScriptBlock $function:DnsClientInterfaceAliasParameterCompleter

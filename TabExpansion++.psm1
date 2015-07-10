@@ -148,7 +148,6 @@ function Get-CompletionPrivateData
         [string]
         $Key)
 
-    Flush-BackgroundResultsQueue
     return $completionPrivateData[$key]
 }
 
@@ -485,83 +484,6 @@ function Test-ArgumentCompleter
 #############################################################################
 #
 # .SYNOPSIS
-#     Load argument completers from all loaded modules and scripts in
-#     $env:PSArgumentCompleterPath, and optionally searches unloaded
-#     modules as well.
-#
-# .DESCRIPTION
-#
-#     This function automatically loads argument completers when the module
-#     TabExpansion++ is loaded. This function can be used to update argument
-#     completers that may have been updated after TabExpansion++ was loaded.
-#
-# .PARAMETER AsJob
-#
-#     Update should happen in the background.
-#
-function Update-ArgumentCompleter
-{
-    [CmdletBinding()]
-    param([switch]$AsJob,
-          [string[]]$Path)
-
-    Write-Verbose "Scanning for completer files..."
-
-    $scriptBlock = {
-        param([System.Collections.Concurrent.ConcurrentQueue[object]]$backgroundResultsQueue,
-              [string[]]$Path)
-
-        if ($Path)
-        {
-            $Path | ForEach-Object {
-                if (Test-Path -Path $_ -PathType Container)
-                {
-                    Get-ChildItem $_\*.ps1,$_\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
-                }
-                else
-                {
-                    Get-ChildItem $_
-                }
-            } | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
-        }
-        else
-        {
-            $modulePaths = $env:PSModulePath -split ';'
-            foreach ($dir in $modulePaths)
-            {
-                Get-ChildItem $dir\*\*.ps1,$dir\*\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
-            }
-
-            foreach ($dir in ($env:PSArgumentCompleterPath -split ';'))
-            {
-                Get-ChildItem $dir\*.ps1,$dir\*.psm1 | LoadArgumentCompleters -backgroundResultsQueue $backgroundResultsQueue
-            }
-        }
-    }
-
-    if (!$AsJob)
-    {
-        & $scriptBlock $backgroundResultsQueue $Path
-        Flush-BackgroundResultsQueue
-    }
-    else
-    {
-        $ps = [powershell]::Create()
-        $null = $ps.AddScript($function:LoadArgumentCompleters.Ast.Extent.Text).Invoke()
-        $ps.Commands.Clear()
-        $null = $ps.AddScript(${function:Get-CommandWithParameter}.Ast.Extent.Text).Invoke()
-        $ps.Commands.Clear()
-        $null = $ps.AddScript($scriptBlock).
-            AddParameter('backgroundResultsQueue', $backgroundResultsQueue).
-            AddParameter('Path', $Path).BeginInvoke()
-        # We aren't expecting any results back, so we can ignore the IAsyncResult and
-        # just let it get collected eventually.
-    }
-}
-
-#############################################################################
-#
-# .SYNOPSIS
 #
 function Get-ArgumentCompleter
 {
@@ -613,7 +535,6 @@ function Get-ArgumentCompleter
         }
     }
 
-    Flush-BackgroundResultsQueue
     WriteCompleters | Sort -Property Native,Command,Parameter
 }
 
@@ -653,157 +574,6 @@ function Set-TabExpansionOption
 #endregion Exported functions
 
 #region Internal utility functions
-
-#############################################################################
-#
-filter LoadArgumentCompleters
-{
-    param([Parameter(ValueFromPipeline)]
-          [System.IO.FileInfo]$Path,
-
-          [System.Collections.Concurrent.ConcurrentQueue[object]]
-          $backgroundResultsQueue)
-
-    if (!(Test-Path $Path.FullName))
-    {
-        return
-    }
-
-    Write-Verbose "Scanning $($Path.FullName) for completers"
-
-    $parseErrors = $null
-    $ast = [System.Management.Automation.Language.Parser]::ParseFile($Path.FullName, [ref]$null, [ref]$parseErrors)
-    if ($parseErrors.Length -gt 0)
-    {
-        Write-Verbose "Parse errors: $($parseErrors | % { $_.ToString(); "\n" })"
-        return
-    }
-
-    $paramAsts = $ast.FindAll({
-        param($ast)
-        return $ast -is [System.Management.Automation.Language.ParamBlockAst]}, $true)
-
-    function ForEach-FunctionWithAttribute
-    {
-        param($paramBlocks, [type]$type, [scriptblock]$scriptblock)
-
-        foreach ($paramBlock in $paramBlocks)
-        {
-            foreach ($attributeAst in $paramBlock.Attributes)
-            {
-                if ($attributeAst.TypeName.GetReflectionAttributeType() -eq $type)
-                {
-                    & $scriptBlock $paramBlock.Parent.GetScriptBlock()
-                    # There may be more than one matching attribute, but we don't care
-                    # here - the called script block needs to handle it as appropriate.
-                    break;
-                }
-            }
-        }
-    }
-
-    ForEach-FunctionWithAttribute $paramAsts ([ArgumentCompleterAttribute]) {
-        param($scriptBlock)
-
-        # Multiple ArgumentCompleter attributes are supported
-        $attrInsts = $scriptBlock.Attributes | Where-Object { $_ -is [ArgumentCompleterAttribute] }
-        foreach ($attrInst in $attrInsts)
-        {
-            $registerParams = @{
-                ScriptBlock = $scriptBlock
-            }
-
-            # Review - use the function name as the description if no description is provided?
-            if ($attrInst.Description)
-            {
-                $registerParams.Description = $attrInst.Description
-            }
-
-            if ($null -ne $attrInst.Command)
-            {
-                $registerParams.CommandName =
-                    [string[]]($attrInst.Command | ForEach-Object {
-                        if ($_ -is [ScriptBlock])
-                        {
-                            & $_
-                        }
-                        else
-                        {
-                            $_
-                        }
-                    })
-                if ($null -eq $registerParams.CommandName)
-                {
-                    # TODO: It might be useful to remember this function in a list
-                    # and report a warning somehow, e.g. Get-ArgumentCompleter -Verbose
-                    continue
-                }
-            }
-
-            if ($attrInst.Native)
-            {
-                $registerParams.Native = $true
-            }
-            elseif ($null -eq $attrInst.Parameter)
-            {
-                # TODO: should report this as an error somehow
-                continue
-            }
-            else
-            {
-                $registerParams.ParameterName = $attrInst.Parameter
-            }
-            $backgroundResultsQueue.Enqueue([pscustomobject]@{
-                ArgumentCompleter = $true
-                Value = $registerParams})
-
-            Write-Verbose "Registering completer '$($registerParams.CommandName)'"
-            #Write-Verbose "Registering completer '$($registerParams.CommandName)' with parameters: '$($registerParams.Keys -join ',')'"
-        }
-    }
-
-    # Call any initialization functions that are defined in the script.
-    ForEach-FunctionWithAttribute $paramAsts ([InitializeArgumentCompleterAttribute]) {
-        param($scriptBlock)
-        $attrInsts = $scriptBlock.Attributes | Where-Object { $_ -is [InitializeArgumentCompleterAttribute] }
-        $result = & $scriptBlock
-        foreach ($attrInst in $attrInsts)
-        {
-            $setCompletionPrivateDataParams = @{
-                Key = $attrInst.Key
-                Value = $result
-            }
-
-            Write-Verbose "found initialization function, creating key: '$($attrInst.Key)'"
-
-            $backgroundResultsQueue.Enqueue([pscustomobject]@{
-                InitializationData = $true
-                Value = $setCompletionPrivateDataParams})
-        }
-    }
-}
-
-#############################################################################
-#
-# Remove all items from the background results queue, applying the
-# appropriate action.
-#
-function Flush-BackgroundResultsQueue
-{
-    $item = $null
-    while ($backgroundResultsQueue.TryDequeue([ref]$item))
-    {
-        $parameters = $item.Value
-        if ($item.ArgumentCompleter)
-        {
-            Register-ArgumentCompleter @parameters
-        }
-        elseif ($item.InitializationData)
-        {
-            Set-CompletionPrivateData @parameters
-        }
-    }
-}
 
 #############################################################################
 #
@@ -975,8 +745,6 @@ function global:TabExpansion2
         $options = $script:options
     }
 
-    Flush-BackgroundResultsQueue
-
     if ($psCmdlet.ParameterSetName -eq 'ScriptInputSet')
     {
         $results = [System.Management.Automation.CommandCompletion]::CompleteInput(
@@ -1118,38 +886,6 @@ function global:TabExpansion2
 Add-Type @"
 using System;
 using System.Management.Automation;
-using System.Collections.Generic;
-
-[AttributeUsage(AttributeTargets.Method)]
-public class ArgumentCompleterAttribute : Attribute
-{
-    // Command can be:
-    //   * a string
-    //   * a script block that generates strings or CommandInfo
-    //   * an array of strings and/or script blocks
-    public object Command { get; set; }
-
-    // The command is a native command, in which case Parameter is ignored.
-    public bool Native { get; set; }
-
-    // The parameter(s) this method completes
-    public string Parameter { get; set; }
-
-    // An optional string displayed when querying what completers
-    // are registered.
-    public string Description { get; set; }
-}
-
-[AttributeUsage(AttributeTargets.Method)]
-public class InitializeArgumentCompleterAttribute : Attribute
-{
-    public InitializeArgumentCompleterAttribute(string Key)
-    {
-        this.Key = Key;
-    }
-
-    public string Key { get; set; }
-}
 
 public class NativeCommandTreeNode
 {
@@ -1207,11 +943,6 @@ $completionPrivateData = @{}
 [string[]]$properties = "Command", "Parameter"
 Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
 
-# Load completers for loaded modules now.  This is done in the background
-# because searching all modules is slow and we don't want to block startup.
-$backgroundResultsQueue = new-object System.Collections.Concurrent.ConcurrentQueue[object]
-Update-ArgumentCompleter -AsJob
-
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Test-ArgumentCompleter, Update-ArgumentCompleter, New-CompletionResult
+                    Set-TabExpansionOption, Test-ArgumentCompleter, New-CompletionResult
 

@@ -5,11 +5,6 @@
 #
 function WmiNamespaceCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Namespace',
-        Command = {Get-CommandWithParameter -Noun wmi* -ParameterName Namespace},
-        Description = 'Complete the -Namespace argument to Wmi cmdlets. For example: Get-WmiObject -Namespace <TAB>'
-    )]
    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $nsParent='root'
@@ -38,14 +33,6 @@ function WmiNamespaceCompleter
 #
 function DirAttributesParameterNameCompletion
 {
-    [ArgumentCompleter(
-        Parameter = "Attributes",
-        Command = "Get-ChildItem",
-        Description = @"
-Complete file attributes like Hidden or ReadOnly, for example:
-
-    Get-ChildItem -Attributes <TAB>
-"@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.IO.FileAttributes].GetFields('Public,Static').Name |
@@ -64,14 +51,6 @@ Complete file attributes like Hidden or ReadOnly, for example:
 #
 function NewItemItemTypeCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'ItemType',
-        Command = 'New-Item',
-        Description = @'
-Complete item types (in FileSystem/ ActiveDirectory), for example:
-
-    New-Item -ItemType <TAB>
-'@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $pathProvided = $fakeBoundParameter['Path']
@@ -112,11 +91,6 @@ Complete item types (in FileSystem/ ActiveDirectory), for example:
 #
 function ControlPanelItemNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = {Get-CommandWithParameter -Noun ControlPanelItem -ParameterName Name},
-        Description = 'Complete the -Name argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-ControlPanelItem -Name "*$wordToComplete*" | ForEach-Object {
@@ -132,14 +106,52 @@ function ControlPanelItemNameCompleter
 #
 function ControlPanelItemCanonicalNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'CanonicalName',
-        Command = {Get-CommandWithParameter -Noun ControlPanelItem -ParameterName CanonicalName},
-        Description = 'Complete the -CanonicalName argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-ControlPanelItem -CanonicalName "*$wordToComplete*" | ForEach-Object {
         New-CompletionResult $_.CanonicalName $_.Description
     }
 }
+
+
+Register-ArgumentCompleter `
+    -Command (Get-CommandWithParameter -Noun wmi* -ParameterName Namespace) `
+    -Parameter 'Namespace' `
+    -Description 'Complete the -Namespace argument to Wmi cmdlets. For example: Get-WmiObject -Namespace <TAB>' `
+    -ScriptBlock $function:WmiNamespaceCompleter
+
+
+Register-ArgumentCompleter `
+    -Command "Get-ChildItem" `
+    -Parameter "Attributes" `
+    -Description @"
+Complete file attributes like Hidden or ReadOnly, for example:
+
+    Get-ChildItem -Attributes <TAB>
+"@ `
+    -ScriptBlock $function:DirAttributesParameterNameCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'New-Item' `
+    -Parameter 'ItemType' `
+    -Description @'
+Complete item types (in FileSystem/ ActiveDirectory), for example:
+
+    New-Item -ItemType <TAB>
+'@ `
+    -ScriptBlock $function:NewItemItemTypeCompletion
+
+
+Register-ArgumentCompleter `
+    -Command (Get-CommandWithParameter -Noun ControlPanelItem -ParameterName Name) `
+    -Parameter 'Name' `
+    -Description 'Complete the -Name argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>' `
+    -ScriptBlock $function:ControlPanelItemNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command (Get-CommandWithParameter -Noun ControlPanelItem -ParameterName CanonicalName) `
+    -Parameter 'CanonicalName' `
+    -Description 'Complete the -CanonicalName argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>' `
+    -ScriptBlock $function:ControlPanelItemCanonicalNameCompleter

@@ -6,10 +6,6 @@
 #
 function PowerShellExeCompletion
 {
-    [ArgumentCompleter(
-        Native,
-        Command = 'PowerShell',
-        Description = 'Complete parameters and arguments to powershell.exe')]
     param($wordToComplete, $commandAst)
 
     $tryParameters = $true
@@ -67,10 +63,6 @@ function PowerShellExeCompletion
 #
 function NetExeCompletion
 {
-    [ArgumentCompleter(
-        Native,
-        Command = 'Net',
-        Description = 'Complete arguments to net.exe')]
     param($wordToComplete, $commandAst)
 
     $commandTree = Get-CompletionPrivateData -Key NetExeCompletionCommandTree
@@ -295,10 +287,6 @@ function NetExeCompletion
 #
 function NetshExeCompletion
 {
-    [ArgumentCompleter(
-        Native,
-        Command = 'Netsh',
-        Description = 'Complete arguments to netsh.exe')]
     param($wordToComplete, $commandAst)
 
     $commandTree = Get-CompletionPrivateData -Key NetshExeCompletionCommandTree
@@ -1145,10 +1133,6 @@ function NetshExeCompletion
 #
 function BCDEditExeCompletion
 {
-    [ArgumentCompleter(
-        Native,
-        Command = 'bcdedit',
-        Description = 'Complete arguments to bcdedit.exe')]
     param($wordToComplete, $commandAst)
 
     $BCDEditSwitches = Get-CompletionPrivateData -Key BCDEdit
@@ -1183,3 +1167,31 @@ function BCDEditExeCompletion
         Where-Object { $_ -like "$wordToComplete*" } |
         ForEach-Object { New-CompletionResult $_ }
 }
+
+
+Register-ArgumentCompleter `
+    -Command 'PowerShell' `
+    -Native `
+    -Description 'Complete parameters and arguments to powershell.exe' `
+    -ScriptBlock $function:PowerShellExeCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Net' `
+    -Native `
+    -Description 'Complete arguments to net.exe' `
+    -ScriptBlock $function:NetExeCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Netsh' `
+    -Native `
+    -Description 'Complete arguments to netsh.exe' `
+    -ScriptBlock $function:NetshExeCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'bcdedit' `
+    -Native `
+    -Description 'Complete arguments to bcdedit.exe' `
+    -ScriptBlock $function:BCDEditExeCompletion

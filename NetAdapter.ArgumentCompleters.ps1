@@ -7,10 +7,6 @@
 #
 function NetAdapter_AdapterNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = { Get-CommandWithParameter -Module NetAdapter -ParameterName Name },
-        Description = 'Complete Adapter names, for example: Get-NetAdapter -Name <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     NetAdapter\Get-NetAdapter -Name "$wordToComplete*" |
@@ -28,10 +24,6 @@ function NetAdapter_AdapterNameArgumentCompletion
 #
 function NetAdapter_InterfaceIndexArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'InterfaceIndex',
-        Command = { Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceIndex },
-        Description = 'Complete interface indexes, for example: Get-NetAdapter -InterfaceIndex <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     NetAdapter\Get-NetAdapter | where InterfaceIndex -Like "$wordToComplete*" |
@@ -49,10 +41,6 @@ function NetAdapter_InterfaceIndexArgumentCompletion
 #
 function NetAdapter_InterfaceDescriptionArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'InterfaceDescription',
-        Command = { Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceDescription },
-        Description = 'Complete interface indexes, for example: Get-NetAdapter -InterfaceDescription <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     NetAdapter\Get-NetAdapter -InterfaceDescription "$wordToComplete*" |
@@ -62,3 +50,24 @@ function NetAdapter_InterfaceDescriptionArgumentCompletion
             New-CompletionResult $_.InterfaceDescription $toolTip
         }
 }
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module NetAdapter -ParameterName Name ) `
+    -Parameter 'Name' `
+    -Description 'Complete Adapter names, for example: Get-NetAdapter -Name <TAB>' `
+    -ScriptBlock $function:NetAdapter_AdapterNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceIndex ) `
+    -Parameter 'InterfaceIndex' `
+    -Description 'Complete interface indexes, for example: Get-NetAdapter -InterfaceIndex <TAB>' `
+    -ScriptBlock $function:NetAdapter_InterfaceIndexArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceDescription ) `
+    -Parameter 'InterfaceDescription' `
+    -Description 'Complete interface indexes, for example: Get-NetAdapter -InterfaceDescription <TAB>' `
+    -ScriptBlock $function:NetAdapter_InterfaceDescriptionArgumentCompletion

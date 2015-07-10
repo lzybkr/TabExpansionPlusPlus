@@ -58,10 +58,6 @@ function InitClassIdTable
 #
 function NewComObjectCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'ComObject',
-        Command = 'New-Object',
-        Description = 'Complete com object class ids for New-Object -ComObject <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $allProgIds = Get-CompletionPrivateData -Key New-Object_ComObject
@@ -83,16 +79,6 @@ function NewComObjectCompletion
 #
 function EventNameCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'EventName',
-        Command = 'Register-ObjectEvent',
-        Description = @'
-Complete the -EventName argument for Register-ObjectEvent, for example:
-
-    $timer = new-object System.Timers.Timer
-    Register-ObjectEvent -InputObject $timer -EventName <TAB>
-'@
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $inputObject = $fakeBoundParameter["InputObject"]
@@ -115,10 +101,6 @@ Complete the -EventName argument for Register-ObjectEvent, for example:
 #
 function OutPrinterNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = 'Out-Printer',
-        Description = 'Complete printer names for Out-Printer')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-WmiObject -Class Win32_Printer |
@@ -137,14 +119,6 @@ function OutPrinterNameArgumentCompletion
 #
 function AddTypePathArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Path',
-        Command = 'Add-Type',
-        Description = 'Complete source code and dlls for Add-Type -Path')]
-    [ArgumentCompleter(
-        Parameter = 'LiteralPath',
-        Command = 'Add-Type',
-        Description = 'Complete source code and dlls for Add-Type -LiteralPath')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-CompletionWithExtension $lastWord ('.dll', '.cs', '.vb', '.js')
@@ -158,14 +132,6 @@ function AddTypePathArgumentCompletion
 #
 function Ps1xmlPathArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'AppendPath',
-        Command = ('Update-TypeData', 'Update-FormatData'),
-        Description = 'Complete ps1xml files for -AppendPath')]
-    [ArgumentCompleter(
-        Parameter = 'PrependPath',
-        Command = ('Update-TypeData', 'Update-FormatData'),
-        Description = 'Complete ps1xml files for -PrependPath')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-CompletionWithExtension $lastWord '.ps1xml'
@@ -179,10 +145,6 @@ function Ps1xmlPathArgumentCompletion
 #
 function UpdateTypeDataSerializationMethodCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'SerializationMethod',
-        Command = 'Update-TypeData',
-        Description = 'Complete the -SerializationMethod argument to Update-TypeData. For example: Update-TypeData -SerializationMethod <TAB>')]
    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
    $sm = [PSObject].Assembly.GetType('System.Management.Automation.SerializationMethod')
@@ -199,11 +161,6 @@ function UpdateTypeDataSerializationMethodCompleter
 #
 function EventNameCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'SourceIdentifier',
-        Command = 'Register-EngineEvent',
-        Description = 'Complete the -SourceIdentifier argument for Register-ObjectEvent, for example: Register-EngineEvent -SourceIdentifier <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.Management.Automation.PsEngineEvent].GetFields() | ForEach-Object { $_.GetValue($null) } | Sort-Object | Where-Object {$_ -like "*$wordToComplete*"} | ForEach-Object {
@@ -219,11 +176,6 @@ function EventNameCompletion
 #
 function UpdateTypeTypeNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'TypeName',
-        Command = ('Get-TypeData','Remove-TypeData','Update-TypeData'),
-        Description = 'Complete names of types:  Update-TypeData -TypeName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.Management.Automation.CompletionCompleters]::CompleteType($wordToComplete)
@@ -237,11 +189,6 @@ function UpdateTypeTypeNameCompleter
 #
 function DisablePSBreakpointIdCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Id',
-        Command = ('Disable-PSBreakpoint'),
-        Description = 'Complete Id parameter:  Disable-PSBreakpoint -Id <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Microsoft.PowerShell.Utility\Get-PSBreakpoint | 
@@ -260,11 +207,6 @@ function DisablePSBreakpointIdCompleter
 #
 function RemovePSBreakpointIdCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Id',
-        Command = ('Remove-PSBreakpoint'),
-        Description = 'Complete Id parameter:  Remove-PSBreakpoint -Id <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Microsoft.PowerShell.Utility\Get-PSBreakpoint | 
@@ -274,3 +216,92 @@ function RemovePSBreakpointIdCompleter
             New-CompletionResult $_.Id $toolTip
         }
 }
+
+
+Register-ArgumentCompleter `
+    -Command 'New-Object' `
+    -Parameter 'ComObject' `
+    -Description 'Complete com object class ids for New-Object -ComObject <TAB>' `
+    -ScriptBlock $function:NewComObjectCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Register-ObjectEvent' `
+    -Parameter 'EventName' `
+    -Description @'
+Complete the -EventName argument for Register-ObjectEvent, for example:
+
+    $timer = new-object System.Timers.Timer
+    Register-ObjectEvent -InputObject $timer -EventName <TAB>
+'@ `
+    -ScriptBlock $function:EventNameCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Out-Printer' `
+    -Parameter 'Name' `
+    -Description 'Complete printer names for Out-Printer' `
+    -ScriptBlock $function:OutPrinterNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Add-Type' `
+    -Parameter 'Path' `
+    -Description 'Complete source code and dlls for Add-Type -Path' `
+    -ScriptBlock $function:AddTypePathArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Add-Type' `
+    -Parameter 'LiteralPath' `
+    -Description 'Complete source code and dlls for Add-Type -LiteralPath' `
+    -ScriptBlock $function:AddTypePathArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Update-TypeData', 'Update-FormatData') `
+    -Parameter 'AppendPath' `
+    -Description 'Complete ps1xml files for -AppendPath' `
+    -ScriptBlock $function:Ps1xmlPathArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Update-TypeData', 'Update-FormatData') `
+    -Parameter 'PrependPath' `
+    -Description 'Complete ps1xml files for -PrependPath' `
+    -ScriptBlock $function:Ps1xmlPathArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Update-TypeData' `
+    -Parameter 'SerializationMethod' `
+    -Description 'Complete the -SerializationMethod argument to Update-TypeData. For example: Update-TypeData -SerializationMethod <TAB>' `
+    -ScriptBlock $function:UpdateTypeDataSerializationMethodCompleter
+
+
+Register-ArgumentCompleter `
+    -Command 'Register-EngineEvent' `
+    -Parameter 'SourceIdentifier' `
+    -Description 'Complete the -SourceIdentifier argument for Register-ObjectEvent, for example: Register-EngineEvent -SourceIdentifier <TAB>' `
+    -ScriptBlock $function:EventNameCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-TypeData','Remove-TypeData','Update-TypeData') `
+    -Parameter 'TypeName' `
+    -Description 'Complete names of types:  Update-TypeData -TypeName <TAB>' `
+    -ScriptBlock $function:UpdateTypeTypeNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ('Disable-PSBreakpoint') `
+    -Parameter 'Id' `
+    -Description 'Complete Id parameter:  Disable-PSBreakpoint -Id <TAB>' `
+    -ScriptBlock $function:DisablePSBreakpointIdCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ('Remove-PSBreakpoint') `
+    -Parameter 'Id' `
+    -Description 'Complete Id parameter:  Remove-PSBreakpoint -Id <TAB>' `
+    -ScriptBlock $function:RemovePSBreakpointIdCompleter

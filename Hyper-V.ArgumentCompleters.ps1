@@ -7,15 +7,6 @@
 #
 function HyperV_VMNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        # REVIEW - exclude New-VM?  Others?
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VM -ParameterName Name },
-        Description = 'Complete VM names, for example: Get-VM -Name <TAB>')]
-    [ArgumentCompleter(
-        Parameter = 'VMName',
-        Command = { Get-CommandWithParameter -Module Hyper-V -ParameterName VMName },
-        Description = 'Complete VM names, for example: Set-VMMemory -VMName <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -41,14 +32,6 @@ function HyperV_VMNameArgumentCompletion
 #
 function HyperV_VMSwitchArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = ('Get-VMSwitch', 'Remove-VMSwitch', 'Rename-VMSwitch', 'Set-VMSwitch'),
-        Description = 'Complete switch names, for example: Get-VMSwitch -Name <TAB>')]
-    [ArgumentCompleter(
-        Parameter = 'SwitchName',
-        Command = { Get-CommandWithParameter -Module Hyper-V -ParameterName SwitchName },
-        Description = 'Complete switch names, for example: New-VM -SwitchName <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -74,10 +57,6 @@ function HyperV_VMSwitchArgumentCompletion
 #
 function HyperV_VMIntegrationServiceNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VMIntegrationService -ParameterName Name },
-        Description = 'Complete integration service names, e.g. Get-VMIntegrationService -VMName myvm -Name <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $vm = $fakeBoundParameter["VMName"]
@@ -109,16 +88,6 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
 #
 function HyperV-VHDPathArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Path',
-        # Exclude New-VHD because we don't want to suggest an existing file when creating a new one.
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName Path |
-                        Where-Object Name -ne 'New-VHD' },
-        Description = 'Completion VHD[X] files for various commands')]
-    [ArgumentCompleter(
-        Parameter = 'ParentPath',
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName ParentPath },
-        Description = 'Completion VHD[X] files for various commands')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-CompletionWithExtension $lastWord ('.vhd', '.vhdx')
@@ -132,13 +101,6 @@ function HyperV-VHDPathArgumentCompletion
 #
 function HyperV_VMNetworkAdapterNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VMNetworkAdapter -ParameterName Name |
-            where Verb -NE Add
-        },
-        Description = 'Tab completes names of VM network adapaters, for example:  Get-VMNetworkAdapter -VMName Foo -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $vm = $fakeBoundParameter['VMName']
@@ -152,3 +114,62 @@ function HyperV_VMNetworkAdapterNameArgumentCompletion
             }
     }
 }
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -Noun VM -ParameterName Name ) `
+    -Parameter 'Name' `
+    -Description 'Complete VM names, for example: Get-VM -Name <TAB>' `
+    -ScriptBlock $function:HyperV_VMNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -ParameterName VMName ) `
+    -Parameter 'VMName' `
+    -Description 'Complete VM names, for example: Set-VMMemory -VMName <TAB>' `
+    -ScriptBlock $function:HyperV_VMNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-VMSwitch', 'Remove-VMSwitch', 'Rename-VMSwitch', 'Set-VMSwitch') `
+    -Parameter 'Name' `
+    -Description 'Complete switch names, for example: Get-VMSwitch -Name <TAB>' `
+    -ScriptBlock $function:HyperV_VMSwitchArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -ParameterName SwitchName ) `
+    -Parameter 'SwitchName' `
+    -Description 'Complete switch names, for example: New-VM -SwitchName <TAB>' `
+    -ScriptBlock $function:HyperV_VMSwitchArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -Noun VMIntegrationService -ParameterName Name ) `
+    -Parameter 'Name' `
+    -Description 'Complete integration service names, e.g. Get-VMIntegrationService -VMName myvm -Name <TAB>' `
+    -ScriptBlock $function:HyperV_VMIntegrationServiceNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName Path |
+                        Where-Object Name -ne 'New-VHD' ) `
+    -Parameter 'Path' `
+    -Description 'Completion VHD[X] files for various commands' `
+    -ScriptBlock $function:HyperV-VHDPathArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName ParentPath ) `
+    -Parameter 'ParentPath' `
+    -Description 'Completion VHD[X] files for various commands' `
+    -ScriptBlock $function:HyperV-VHDPathArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Hyper-V -Noun VMNetworkAdapter -ParameterName Name |
+            where Verb -NE Add
+        ) `
+    -Parameter 'Name' `
+    -Description 'Tab completes names of VM network adapaters, for example:  Get-VMNetworkAdapter -VMName Foo -Name <TAB>' `
+    -ScriptBlock $function:HyperV_VMNetworkAdapterNameArgumentCompletion

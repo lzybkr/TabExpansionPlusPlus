@@ -5,15 +5,6 @@
 #
 function PrinterNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = ('Get-Printer', 'Remove-Printer', 'Set-Printer'),
-        Description = 'Complete printer names')]
-    [ArgumentCompleter(
-        Parameter = 'PrinterName',
-        Command = { Get-Command -Module PrintManagement -ParameterName PrinterName },
-        Description = 'Complete printer names')]
-
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -41,10 +32,6 @@ function PrinterNameArgumentCompletion
 #
 function PrinterDriverNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = ('Get-PrinterDriver', 'Remove-PrinterDriver'),
-        Description = 'Complete printer driver names.')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -72,10 +59,6 @@ function PrinterDriverNameArgumentCompletion
 #
 function PrinterPortArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = ('Get-PrinterPort', 'Remove-PrinterPort'),
-        Description = 'Complete printer port names.')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -91,3 +74,31 @@ function PrinterPortArgumentCompletion
             New-CompletionResult $_.Name $_.Description
         }
 }
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-Printer', 'Remove-Printer', 'Set-Printer') `
+    -Parameter 'Name' `
+    -Description 'Complete printer names' `
+    -ScriptBlock $function:PrinterNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-Command -Module PrintManagement -ParameterName PrinterName ) `
+    -Parameter 'PrinterName' `
+    -Description 'Complete printer names' `
+    -ScriptBlock $function:PrinterNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-PrinterDriver', 'Remove-PrinterDriver') `
+    -Parameter 'Name' `
+    -Description 'Complete printer driver names.' `
+    -ScriptBlock $function:PrinterDriverNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-PrinterPort', 'Remove-PrinterPort') `
+    -Parameter 'Name' `
+    -Description 'Complete printer port names.' `
+    -ScriptBlock $function:PrinterPortArgumentCompletion

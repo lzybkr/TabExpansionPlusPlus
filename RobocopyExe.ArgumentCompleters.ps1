@@ -2,10 +2,6 @@
 
 function RobocopyExeCompletion
 {
-    [ArgumentCompleter(
-        Native,
-        Command = 'Robocopy',
-        Description = 'Complete parameters and arguments to robocopy.exe')]
             
     param($wordToComplete, $commandAst) 
 
@@ -112,3 +108,10 @@ function RobocopyExeCompletion
             New-CompletionResult $_.Argument $_.ToolTip
         }
 }
+
+
+Register-ArgumentCompleter `
+    -Command 'Robocopy' `
+    -Native `
+    -Description 'Complete parameters and arguments to robocopy.exe' `
+    -ScriptBlock $function:RobocopyExeCompletion

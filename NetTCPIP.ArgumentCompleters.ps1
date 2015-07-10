@@ -7,16 +7,6 @@
 #
 function NetIPAddressInterfaceAliasParameterCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'InterfaceAlias',
-        Command = { Get-CommandWithParameter -Module NetTCPIP -ParameterName InterfaceAlias},
-        Description = 'Complete InterfaceAlias names, for example: Get-NetIPAddress -InterfaceAlias <TAB>')]
-
-    [ArgumentCompleter(
-        Parameter = 'ifAlias',
-        Command = { Get-CommandWithParameter -Module NetTCPIP -ParameterName ifAlias},
-        Description = 'Complete ifAlias names, for example: Get-NetIPAddress -ifAlias <TAB>')]
-
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     NetTCPIP\Get-NetIPAddress -InterfaceAlias "$wordToComplete*" | Sort-Object InterfaceAlias | ForEach-Object {
@@ -24,3 +14,16 @@ function NetIPAddressInterfaceAliasParameterCompleter
     }
 }
 
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module NetTCPIP -ParameterName InterfaceAlias) `
+    -Parameter 'InterfaceAlias' `
+    -Description 'Complete InterfaceAlias names, for example: Get-NetIPAddress -InterfaceAlias <TAB>' `
+    -ScriptBlock $function:NetIPAddressInterfaceAliasParameterCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module NetTCPIP -ParameterName ifAlias) `
+    -Parameter 'ifAlias' `
+    -Description 'Complete ifAlias names, for example: Get-NetIPAddress -ifAlias <TAB>' `
+    -ScriptBlock $function:NetIPAddressInterfaceAliasParameterCompleter

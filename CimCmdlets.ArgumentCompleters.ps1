@@ -7,11 +7,6 @@
 #
 function CimInstance_QueryDialectCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'QueryDialect',
-        Command = {Get-CommandWithParameter -Module CimCmdlets -ParameterName QueryDialect},
-        Description = 'Complete the -QueryDialect argument to CimInstance cmdlets:  Get-CimInstance -QueryDialect  -QueryDialect <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Write-Output CQL WQL | Where-Object {$_ -like "$wordToComplete*"} | ForEach-Object {
@@ -27,11 +22,6 @@ function CimInstance_QueryDialectCompleter
 #
 function CimInstance_PropertyParameterCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Property',
-        Command = 'Get-CimInstance',
-        Description = 'Complete the -Property argument to CimInstance cmdlets: Get-CimInstance -Class Win32_Process -Property <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $param = @{}
@@ -58,11 +48,6 @@ function CimInstance_PropertyParameterCompleter
 #
 function CimInstance_CimAssociatedInstanceResultClassNameParameterCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'ResultClassName',
-        Command = 'Get-CimAssociatedInstance',
-        Description = 'Complete the -ResultClassName argument to Get-CimAssociatedInstance: $disk = Get-CimInstance -Class Win32_LogicalDisk -Filter ''DriveType=3''; Get-CimAssociatedInstance -CimInstance $disk -ResultClassName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $param = @{}
@@ -81,3 +66,23 @@ function CimInstance_CimAssociatedInstanceResultClassNameParameterCompleter
     }
 }
 
+
+Register-ArgumentCompleter `
+    -Command (Get-CommandWithParameter -Module CimCmdlets -ParameterName QueryDialect) `
+    -Parameter 'QueryDialect' `
+    -Description 'Complete the -QueryDialect argument to CimInstance cmdlets:  Get-CimInstance -QueryDialect  -QueryDialect <TAB>' `
+    -ScriptBlock $function:CimInstance_QueryDialectCompleter
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-CimInstance' `
+    -Parameter 'Property' `
+    -Description 'Complete the -Property argument to CimInstance cmdlets: Get-CimInstance -Class Win32_Process -Property <TAB>' `
+    -ScriptBlock $function:CimInstance_PropertyParameterCompleter
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-CimAssociatedInstance' `
+    -Parameter 'ResultClassName' `
+    -Description 'Complete the -ResultClassName argument to Get-CimAssociatedInstance: $disk = Get-CimInstance -Class Win32_LogicalDisk -Filter ''DriveType=3''; Get-CimAssociatedInstance -CimInstance $disk -ResultClassName <TAB>' `
+    -ScriptBlock $function:CimInstance_CimAssociatedInstanceResultClassNameParameterCompleter

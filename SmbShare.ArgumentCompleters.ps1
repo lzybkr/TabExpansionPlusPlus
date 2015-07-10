@@ -5,10 +5,6 @@
 #
 function SmbShareNameParameterCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = ('Get-SmbShare', 'Remove-SmbShare', 'Set-SmbShare'),
-        Description = 'Complete share names.')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCimSession = @{}
@@ -24,3 +20,10 @@ function SmbShareNameParameterCompletion
             New-CompletionResult $_.Name $_.Description
         }
 }
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-SmbShare', 'Remove-SmbShare', 'Set-SmbShare') `
+    -Parameter 'Name' `
+    -Description 'Complete share names.' `
+    -ScriptBlock $function:SmbShareNameParameterCompletion
