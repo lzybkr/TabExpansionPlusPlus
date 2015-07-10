@@ -22,7 +22,7 @@ $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove =
 }
 
 
-#region Non-exported utility functions for completers
+#region Exported utility functions for completers
 
 #############################################################################
 #
@@ -299,7 +299,7 @@ function Get-CommandTreeCompletion
     }
 }
 
-#endregion Non-exported utility functions for completers
+#endregion Exported utility functions for completers
 
 #region Exported functions
 
@@ -426,9 +426,9 @@ function Register-ArgumentCompleter
         }
 
         $key = if ($Native) { 'NativeArgumentCompleters' } else { 'CustomArgumentCompleters' }
-        $script:options[$key]["${command}${ParameterName}"] = $ScriptBlock
+        $tabExpansionOptions[$key]["${command}${ParameterName}"] = $ScriptBlock
 
-        $script:descriptions["${command}${ParameterName}$Native"] = $Description
+        $tabExpansionDescriptions["${command}${ParameterName}$Native"] = $Description
     }
 }
 
@@ -485,7 +485,7 @@ function Test-ArgumentCompleter
         $ast = [System.Management.Automation.Language.Parser]::ParseInput($NativeCommand, [ref] $Tokens, [ref] $Errors)
         $commandAst = $ast.EndBlock.Statements[0].PipelineElements[0]
         $command = $commandAst.GetCommandName()
-        $completer = $options.NativeArgumentCompleters[$command]
+        $completer = $tabExpansionOptions.NativeArgumentCompleters[$command]
         if (-not $Completer)
         {
             throw "No argument completer registered for command '$Command' (from $NativeCommand)"
@@ -493,7 +493,7 @@ function Test-ArgumentCompleter
         & $completer $WordToComplete $commandAst
     }
     else {
-        $completer = $options.CustomArgumentCompleters["${CommandName}:$ParameterName"]
+        $completer = $tabExpansionOptions.CustomArgumentCompleters["${CommandName}:$ParameterName"]
         if (-not $Completer)
         {
             throw "No argument completer registered for '${CommandName}:$ParameterName'"
@@ -527,7 +527,7 @@ function Get-ArgumentCompleter
             {
                 $c = $command
                 if ($command -and $parameter) { $c += ':' }
-                $description = $descriptions["${c}${parameter}${native}"]
+                $description = $tabExpansionDescriptions["${c}${parameter}${native}"]
                 $completer = [pscustomobject]@{
                     Command = $command
                     Parameter = $parameter
@@ -542,7 +542,7 @@ function Get-ArgumentCompleter
             }
         }
 
-        foreach ($pair in $options.CustomArgumentCompleters.GetEnumerator())
+        foreach ($pair in $tabExpansionOptions.CustomArgumentCompleters.GetEnumerator())
         {
             if ($pair.Key -match '^(.*):(.*)$')
             {
@@ -558,7 +558,7 @@ function Get-ArgumentCompleter
             WriteCompleter $command $parameter $false $pair.Value
         }
 
-        foreach ($pair in $options.NativeArgumentCompleters.GetEnumerator())
+        foreach ($pair in $tabExpansionOptions.NativeArgumentCompleters.GetEnumerator())
         {
             WriteCompleter $pair.Key '' $true $pair.Value
         }
@@ -597,7 +597,7 @@ function Set-TabExpansionOption
         [object]
         $Value = $true)
 
-    $script:options[$option] = $value
+    $tabExpansionOptions[$option] = $value
 }
 
 #endregion Exported functions
@@ -709,7 +709,7 @@ function TryNativeCommandOptionCompletion
             if ($command -ne $null)
             {
                 $nativeCommand = [System.IO.Path]::GetFileNameWithoutExtension($command.CommandElements[0].Value)
-                $nativeCompleter = $options.NativeArgumentCompleters[$nativeCommand]
+                $nativeCompleter = $tabExpansionOptions.NativeArgumentCompleters[$nativeCommand]
 
                 if ($nativeCompleter)
                 {
@@ -767,11 +767,11 @@ function global:TabExpansion2
 
     if ($null -ne $options)
     {
-        $options += $script:options
+        $options += $tabExpansionOptions
     }
     else
     {
-        $options = $script:options
+        $options = $tabExpansionOptions
     }
 
     if ($psCmdlet.ParameterSetName -eq 'ScriptInputSet')
@@ -958,12 +958,12 @@ public class NativeCommandTreeNode
 "@
 
 # Custom completions are saved in this hashtable
-$options = @{
+$tabExpansionOptions = @{
     CustomArgumentCompleters = @{}
     NativeArgumentCompleters = @{}
 }
 # Descriptions for the above completions saved in this hashtable
-$descriptions = @{}
+$tabExpansionDescriptions = @{}
 # And private data for the above completions cached in this hashtable
 $completionPrivateData = @{}
 
@@ -973,5 +973,12 @@ $completionPrivateData = @{}
 Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
-                    Set-TabExpansionOption, Test-ArgumentCompleter, New-CompletionResult
+                    Set-TabExpansionOption, Test-ArgumentCompleter, New-CompletionResult,
+                    Get-CommandWithParameter, Set-CompletionPrivateData, Get-CompletionPrivateData,
+                    Get-CompletionWithExtension, New-CommandTree, Get-CommandTreeCompletion
+
+foreach ($file in dir $PSScriptRoot\*.ArgumentCompleters.ps1)
+{
+    & $file.FullName
+}
 
