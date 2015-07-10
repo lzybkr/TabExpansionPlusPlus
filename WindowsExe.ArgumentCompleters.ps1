@@ -26,7 +26,7 @@ function PowerShellExeCompletion
         {
             $completions = "Text", "XML"
         }
-        elseif ("WindowsStyle".StartsWith($parameterAst.ParameterName, "OrdinalIgnoreCase"))
+        elseif ("WindowStyle".StartsWith($parameterAst.ParameterName, "OrdinalIgnoreCase"))
         {
             $completions = "Normal", "Minimized", "Maximized", "Hidden"
         }
@@ -35,11 +35,9 @@ function PowerShellExeCompletion
             $completions = ([Microsoft.PowerShell.ExecutionPolicy] | Get-Member -Static -MemberType Property).Name
         }
 
-        foreach ($completion in $completions)
-        {
-            $tryParameters = $false
-            New-CompletionResult $completion
-        }
+        $tryParameters = ($completions.Length -eq 0)
+
+        $completions | Where-Object { $_ -match "^$wordToComplete" } | ForEach-Object { New-CompletionResult $_ }
     }
 
     if ($tryParameters -and ($wordToComplete.StartsWith("-") -or "" -eq $wordToComplete))
