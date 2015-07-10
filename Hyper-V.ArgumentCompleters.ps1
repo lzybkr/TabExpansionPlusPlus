@@ -86,7 +86,7 @@ function HyperV_VMIntegrationServiceNameArgumentCompletion
 #
 #    Complete vhd/vhdx files for -Path and -ParentPath parameters to *-VHD commands.
 #
-function HyperV-VHDPathArgumentCompletion
+function HyperV_VHDPathArgumentCompletion
 {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
@@ -156,14 +156,14 @@ Register-ArgumentCompleter `
                         Where-Object Name -ne 'New-VHD' ) `
     -Parameter 'Path' `
     -Description 'Completion VHD[X] files for various commands' `
-    -ScriptBlock $function:HyperV-VHDPathArgumentCompletion
+    -ScriptBlock $function:HyperV_VHDPathArgumentCompletion
 
 
 Register-ArgumentCompleter `
     -Command ( Get-CommandWithParameter -Module Hyper-V -Noun VHD -ParameterName ParentPath ) `
     -Parameter 'ParentPath' `
     -Description 'Completion VHD[X] files for various commands' `
-    -ScriptBlock $function:HyperV-VHDPathArgumentCompletion
+    -ScriptBlock $function:HyperV_VHDPathArgumentCompletion
 
 
 Register-ArgumentCompleter `
