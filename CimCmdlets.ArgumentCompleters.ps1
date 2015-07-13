@@ -68,7 +68,7 @@ function CimInstance_CimAssociatedInstanceResultClassNameParameterCompleter
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module CimCmdlets -ParameterName QueryDialect) `
+    -Command ('Get-CimInstance','Invoke-CimMethod','Register-CimIndicationEvent','Remove-CimInstance,Set-CimInstance') `
     -Parameter 'QueryDialect' `
     -Description 'Complete the -QueryDialect argument to CimInstance cmdlets:  Get-CimInstance -QueryDialect  -QueryDialect <TAB>' `
     -ScriptBlock $function:CimInstance_QueryDialectCompleter

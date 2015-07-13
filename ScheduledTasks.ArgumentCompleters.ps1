@@ -33,16 +33,14 @@ function ScheduledTaskTaskPathArgumentCompletion
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module ScheduledTasks -ParameterName TaskName ) `
+    -Command ('Disable-ScheduledTask','Enable-ScheduledTask','Export-ScheduledTask','Get-ClusteredScheduledTask','Get-ScheduledTask','Get-ScheduledTaskInfo','Register-ClusteredScheduledTask','Register-ScheduledTask','Set-ClusteredScheduledTask','Set-ScheduledTask','Start-ScheduledTask','Stop-ScheduledTask','Unregister-ClusteredScheduledTask','Unregister-ScheduledTask') `
     -Parameter 'TaskName' `
     -Description 'Complete task names' `
     -ScriptBlock $function:ScheduledTaskTaskNameArgumentCompletion
 
 
 Register-ArgumentCompleter `
-    -Command (
-            # REVIEW: should Set-ScheduledTask be excluded?
-            Get-CommandWithParameter -Module ScheduledTasks -ParameterName TaskPath ) `
+    -Command ('Disable-ScheduledTask','Enable-ScheduledTask','Export-ScheduledTask','Get-ScheduledTask','Get-ScheduledTaskInfo','Register-ScheduledTask','Set-ScheduledTask','Start-ScheduledTask','Stop-ScheduledTask','Unregister-ScheduledTask') `
     -Parameter 'TaskPath' `
     -Description 'Complete task path arguments for scheduled task cmdlets' `
     -ScriptBlock $function:ScheduledTaskTaskPathArgumentCompletion

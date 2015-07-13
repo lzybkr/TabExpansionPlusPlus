@@ -16,7 +16,7 @@ function NetIPAddressInterfaceAliasParameterCompleter
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module NetTCPIP -ParameterName InterfaceAlias) `
+    -Command ('Get-NetIPAddress','Get-NetIPConfiguration','Get-NetIPInterface','Get-NetNeighbor','Get-NetRoute','New-NetIPAddress','New-NetNeighbor','New-NetRoute','Remove-NetIPAddress','Remove-NetNeighbor','Remove-NetRoute','Set-NetIPAddress','Set-NetIPInterface','Set-NetNeighbor','Set-NetRoute') `
     -Parameter 'InterfaceAlias' `
     -Description 'Complete InterfaceAlias names, for example: Get-NetIPAddress -InterfaceAlias <TAB>' `
     -ScriptBlock $function:NetIPAddressInterfaceAliasParameterCompleter

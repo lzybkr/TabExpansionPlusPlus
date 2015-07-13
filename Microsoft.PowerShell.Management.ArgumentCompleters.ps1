@@ -115,7 +115,7 @@ function ControlPanelItemCanonicalNameCompleter
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Noun wmi* -ParameterName Namespace) `
+    -Command ('Get-WmiObject','Invoke-WmiMethod','Register-WmiEvent','Remove-WmiObject','Set-WmiInstance') `
     -Parameter 'Namespace' `
     -Description 'Complete the -Namespace argument to Wmi cmdlets. For example: Get-WmiObject -Namespace <TAB>' `
     -ScriptBlock $function:WmiNamespaceCompleter
@@ -144,14 +144,14 @@ Complete item types (in FileSystem/ ActiveDirectory), for example:
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Noun ControlPanelItem -ParameterName Name) `
+    -Command ('Get-ControlPanelItem','Show-ControlPanelItem') `
     -Parameter 'Name' `
     -Description 'Complete the -Name argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>' `
     -ScriptBlock $function:ControlPanelItemNameCompleter
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Noun ControlPanelItem -ParameterName CanonicalName) `
+    -Command ('Get-ControlPanelItem','Show-ControlPanelItem') `
     -Parameter 'CanonicalName' `
     -Description 'Complete the -CanonicalName argument to ControlPanelItem cmdlets. For example: Show-ControlPanelItem -Name <TAB>' `
     -ScriptBlock $function:ControlPanelItemCanonicalNameCompleter

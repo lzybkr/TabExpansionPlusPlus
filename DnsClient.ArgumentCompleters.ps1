@@ -16,7 +16,7 @@ function DnsClientInterfaceAliasParameterCompleter
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module DnsClient -ParameterName InterfaceAlias) `
+    -Command ('Get-DnsClient','Get-DnsClientServerAddress','Set-DnsClient','Set-DnsClientServerAddress') `
     -Parameter 'InterfaceAlias' `
     -Description 'Complete the -InterfaceAlias arguments to DnsClient module cmdlets. For example:  Get-DnsClient -InterfaceAlias <TAB>' `
     -ScriptBlock $function:DnsClientInterfaceAliasParameterCompleter

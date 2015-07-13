@@ -53,21 +53,21 @@ function NetAdapter_InterfaceDescriptionArgumentCompletion
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module NetAdapter -ParameterName Name ) `
+    -Command ('Disable-NetAdapter','Disable-NetAdapterBinding','Disable-NetAdapterChecksumOffload','Disable-NetAdapterEncapsulatedPacketTaskOffload','Disable-NetAdapterIPsecOffload','Disable-NetAdapterLso','Disable-NetAdapterPowerManagement','Disable-NetAdapterQos','Disable-NetAdapterRdma','Disable-NetAdapterRsc','Disable-NetAdapterRss','Disable-NetAdapterSriov','Disable-NetAdapterVmq','Enable-NetAdapter','Enable-NetAdapterBinding','Enable-NetAdapterChecksumOffload','Enable-NetAdapterEncapsulatedPacketTaskOffload','Enable-NetAdapterIPsecOffload','Enable-NetAdapterLso','Enable-NetAdapterPowerManagement','Enable-NetAdapterQos','Enable-NetAdapterRdma','Enable-NetAdapterRsc','Enable-NetAdapterRss','Enable-NetAdapterSriov','Enable-NetAdapterVmq','Get-NetAdapter','Get-NetAdapterAdvancedProperty','Get-NetAdapterBinding','Get-NetAdapterChecksumOffload','Get-NetAdapterEncapsulatedPacketTaskOffload','Get-NetAdapterHardwareInfo','Get-NetAdapterIPsecOffload','Get-NetAdapterLso','Get-NetAdapterPowerManagement','Get-NetAdapterQos','Get-NetAdapterRdma','Get-NetAdapterRsc','Get-NetAdapterRss','Get-NetAdapterSriov','Get-NetAdapterSriovVf','Get-NetAdapterStatistics','Get-NetAdapterVmq','Get-NetAdapterVmqQueue','Get-NetAdapterVPort','New-NetAdapterAdvancedProperty','Remove-NetAdapterAdvancedProperty','Rename-NetAdapter','Reset-NetAdapterAdvancedProperty','Restart-NetAdapter','Set-NetAdapter','Set-NetAdapterAdvancedProperty','Set-NetAdapterBinding','Set-NetAdapterChecksumOffload','Set-NetAdapterEncapsulatedPacketTaskOffload','Set-NetAdapterIPsecOffload','Set-NetAdapterLso','Set-NetAdapterPowerManagement','Set-NetAdapterQos','Set-NetAdapterRdma','Set-NetAdapterRsc','Set-NetAdapterRss','Set-NetAdapterSriov','Set-NetAdapterVmq') `
     -Parameter 'Name' `
     -Description 'Complete Adapter names, for example: Get-NetAdapter -Name <TAB>' `
     -ScriptBlock $function:NetAdapter_AdapterNameArgumentCompletion
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceIndex ) `
+    -Command ('Get-NetAdapter') `
     -Parameter 'InterfaceIndex' `
     -Description 'Complete interface indexes, for example: Get-NetAdapter -InterfaceIndex <TAB>' `
     -ScriptBlock $function:NetAdapter_InterfaceIndexArgumentCompletion
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module NetAdapter -ParameterName InterfaceDescription ) `
+    -Command ('Disable-NetAdapter','Disable-NetAdapterBinding','Disable-NetAdapterChecksumOffload','Disable-NetAdapterEncapsulatedPacketTaskOffload','Disable-NetAdapterIPsecOffload','Disable-NetAdapterLso','Disable-NetAdapterPowerManagement','Disable-NetAdapterQos','Disable-NetAdapterRdma','Disable-NetAdapterRsc','Disable-NetAdapterRss','Disable-NetAdapterSriov','Disable-NetAdapterVmq','Enable-NetAdapter','Enable-NetAdapterBinding','Enable-NetAdapterChecksumOffload','Enable-NetAdapterEncapsulatedPacketTaskOffload','Enable-NetAdapterIPsecOffload','Enable-NetAdapterLso','Enable-NetAdapterPowerManagement','Enable-NetAdapterQos','Enable-NetAdapterRdma','Enable-NetAdapterRsc','Enable-NetAdapterRss','Enable-NetAdapterSriov','Enable-NetAdapterVmq','Get-NetAdapter','Get-NetAdapterAdvancedProperty','Get-NetAdapterBinding','Get-NetAdapterChecksumOffload','Get-NetAdapterEncapsulatedPacketTaskOffload','Get-NetAdapterHardwareInfo','Get-NetAdapterIPsecOffload','Get-NetAdapterLso','Get-NetAdapterPowerManagement','Get-NetAdapterQos','Get-NetAdapterRdma','Get-NetAdapterRsc','Get-NetAdapterRss','Get-NetAdapterSriov','Get-NetAdapterSriovVf','Get-NetAdapterStatistics','Get-NetAdapterVmq','Get-NetAdapterVmqQueue','Get-NetAdapterVPort','New-NetAdapterAdvancedProperty','Remove-NetAdapterAdvancedProperty','Rename-NetAdapter','Reset-NetAdapterAdvancedProperty','Restart-NetAdapter','Set-NetAdapter','Set-NetAdapterAdvancedProperty','Set-NetAdapterBinding','Set-NetAdapterChecksumOffload','Set-NetAdapterEncapsulatedPacketTaskOffload','Set-NetAdapterIPsecOffload','Set-NetAdapterLso','Set-NetAdapterPowerManagement','Set-NetAdapterQos','Set-NetAdapterRdma','Set-NetAdapterRsc','Set-NetAdapterRss','Set-NetAdapterSriov','Set-NetAdapterVmq') `
     -Parameter 'InterfaceDescription' `
     -Description 'Complete interface indexes, for example: Get-NetAdapter -InterfaceDescription <TAB>' `
     -ScriptBlock $function:NetAdapter_InterfaceDescriptionArgumentCompletion

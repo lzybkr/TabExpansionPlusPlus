@@ -16,7 +16,7 @@ function Dism_WindowsOptionalFeatureNameCompleter
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module DISM -ParameterName FeatureName) `
+    -Command ('Disable-WindowsOptionalFeature','Enable-WindowsOptionalFeature','Get-WindowsOptionalFeature') `
     -Parameter 'FeatureName' `
     -Description 'Complete the -FeatureName argument to DISM cmdlets:  Get-WindowsOptionalFeature -FeatureName xps* -Online <TAB>' `
     -ScriptBlock $function:Dism_WindowsOptionalFeatureNameCompleter

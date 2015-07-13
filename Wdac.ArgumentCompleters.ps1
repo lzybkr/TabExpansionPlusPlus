@@ -46,21 +46,21 @@ function Wdac_DriverNameParameterCompletion
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module Wdac -Noun OdbcDriver -ParameterName Name) `
+    -Command ('Get-OdbcDriver','Set-OdbcDriver') `
     -Parameter 'Name' `
     -Description 'Complete the -Name arguments to *-OdbcDriver cmdlets. For example: Get-OdbcDriver -Name <TAB>' `
     -ScriptBlock $function:Wdac_OdbcDriverNameParameterCompletion
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module Wdac -Noun OdbcDsn -ParameterName Name) `
+    -Command ('Add-OdbcDsn','Get-OdbcDsn','Remove-OdbcDsn','Set-OdbcDsn') `
     -Parameter 'Name' `
     -Description 'Complete the -Name arguments to *-OdbcDsn cmdlets. For example: Get-OdbcDsn -Name <TAB>' `
     -ScriptBlock $function:Wdac_OdbcDsnNameParameterCompletion
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module Wdac -Noun OdbcDsn -ParameterName DriverName) `
+    -Command ('Add-OdbcDsn','Get-OdbcDsn','Remove-OdbcDsn','Set-OdbcDsn') `
     -Parameter 'DriverName' `
     -Description 'Complete the -DriverName arguments to *-OdbcDsn cmdlets. For example: Get-OdbcDsn -DriverName <TAB>' `
     -ScriptBlock $function:Wdac_DriverNameParameterCompletion

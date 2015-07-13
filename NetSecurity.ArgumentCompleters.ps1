@@ -31,14 +31,14 @@ function NetFirewallRuleDisplayNameParameterCompleter
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module NetSecurity -Noun NetFirewallRule -ParameterName Name | Where-Object Verb -ne New) `
+    -Command ('Copy-NetFirewallRule','Disable-NetFirewallRule','Enable-NetFirewallRule','Get-NetFirewallRule','Remove-NetFirewallRule','Rename-NetFirewallRule','Set-NetFirewallRule') `
     -Parameter 'Name' `
     -Description 'Complete the -Name argument to *-NetFirewallRule cmdlets, for example: Get-NetFirewallRule -Name <TAB>' `
     -ScriptBlock $function:NetFirewallRuleNameParameterCompleter
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-CommandWithParameter -Module NetSecurity -Noun NetFirewallRule -ParameterName DisplayName | Where-Object Verb -ne New) `
+    -Command ('Copy-NetFirewallRule','Disable-NetFirewallRule','Enable-NetFirewallRule','Get-NetFirewallRule','Remove-NetFirewallRule','Rename-NetFirewallRule','Set-NetFirewallRule') `
     -Parameter 'DisplayName' `
     -Description 'Complete the -DisplayName argument to *-NetFirewallRule cmdlets, for example: Get-NetFirewallRule -DisplayName <TAB>' `
     -ScriptBlock $function:NetFirewallRuleDisplayNameParameterCompleter

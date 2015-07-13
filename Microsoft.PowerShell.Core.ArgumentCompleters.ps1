@@ -320,7 +320,7 @@ Register-ArgumentCompleter `
 
 
 Register-ArgumentCompleter `
-    -Command (Get-CommandWithParameter -Module Microsoft.PowerShell.* -ParameterName Scope) `
+    -Command ('Clear-Variable','Export-Alias','Get-Alias','Get-PSDrive','Get-Variable','Import-Alias','Import-Module','New-Alias','New-PSDrive','New-Variable','Remove-PSDrive','Remove-Variable','Set-Alias','Set-Variable') `
     -Parameter 'Scope' `
     -Description 'Completes the Scope argument for *-Variable, *-Alias, *-PSDrive. For example:  Get-Variable -Scope <TAB>' `
     -ScriptBlock $function:ScopeParameterCompleter
