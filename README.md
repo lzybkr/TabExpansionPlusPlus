@@ -1,6 +1,6 @@
 ﻿TabExpansion++
 ==============
-Starting with PowerShell version 3.0, the framework excellent support for tab expansion and Intellisense, but it is missing some useful features. This module addresses some of those shortcomings.
+Starting with PowerShell version 3.0, there is excellent support for tab expansion and Intellisense, but it is missing some useful features. This module addresses some of those shortcomings.
 
 TabExpansion++ adds support for the following:
 
