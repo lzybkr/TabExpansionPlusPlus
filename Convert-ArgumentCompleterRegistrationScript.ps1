@@ -63,18 +63,6 @@ foreach ($fnDefn in $ast.FindAll({$args[0] -is [System.Management.Automation.Lan
     $copyFrom = $fnDefn.Extent.EndOffset
 }
 
-foreach ($commandAst in $ast.FindAll({$args[0] -is [System.Management.Automation.Language.CommandAst]}, $true))
-{
-    $commandName = $commandAst.GetCommandName()
-    if ($commandName -eq 'Get-CompletionPrivateData' -or $commandName -eq 'Set-CompletionPrivateData')
-    {
-        $file = Split-Path -Leaf $commandAst.Extent.File
-        $line = $commandAst.Extent.StartLineNumber
-        $col = $commandAst.Extent.StartColumnNumber
-        $host.UI.WriteErrorLine("$file($line, $col): $commandName is not supported, use a script scoped variable instead")
-    }
-}
-
 foreach ($registration in $registrations)
 {
     $functionName = $registration.FunctionName
