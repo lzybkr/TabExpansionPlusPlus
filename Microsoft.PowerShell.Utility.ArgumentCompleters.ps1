@@ -1,12 +1,9 @@
 
 #
-# Reading the registry for progids takes > 500ms, so we do it at module load time.
+# Reading the registry for progids takes > 500ms, so we do it just once
 #
 function InitClassIdTable
 {
-    [InitializeArgumentCompleter('New-Object_ComObject')]
-    param()
-
     $progIds = [Microsoft.Win32.Registry]::ClassesRoot.GetSubKeyNames()
     $versionedProgIds = new-object System.Collections.Generic.List[string]
 
@@ -61,6 +58,12 @@ function NewComObjectCompletion
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $allProgIds = Get-CompletionPrivateData -Key New-Object_ComObject
+    if (!$allProgIds)
+    {
+        $allProgIds = InitClassIdTable
+        Set-CompletionPrivateData -Key New-Object_ComObject -Value $allProgIds
+    }
+
     # TODO - is sorting from intialization good enough?  This completion is pretty slow
     # as is if $wordToComplete is empty.
     $allProgIds.GetEnumerator() |
