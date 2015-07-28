@@ -10,11 +10,6 @@
 #
 function StorageAccount_StorageAccountNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'StorageAccountName',
-        Command = { Get-CommandWithParameter -Module Azure -ParameterName StorageAccountName },
-        Description = 'Complete the -StorageAccountName parameter value for Azure cmdlets:  Get-AzureStorageAccount -StorageAccountName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     #Write-Verbose -Message ('Called Azure StorageAccountName completer at {0}' -f (Get-Date))
@@ -53,11 +48,6 @@ function StorageAccount_StorageAccountNameCompleter
 #
 function AzureStorage_StorageContainerNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = { Get-CommandWithParameter -Module Azure -ParameterName Name -Name *container* },
-        Description = 'Complete the -Name parameter value for Azure cmdlets:  Get-AzureStorageContainer -Context $Context -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $CacheKey = 'AzureStorage_ContainerNameCache'
@@ -94,11 +84,6 @@ function AzureStorage_StorageContainerNameCompleter
 #
 function CloudService_ServiceNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'ServiceName',
-        Command = { Get-CommandWithParameter -Module Azure -ParameterName ServiceName },
-        Description = 'Complete the -ServiceName parameter value for Azure cmdlets:  Get-AzureService -ServiceName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     #Write-Verbose -Message ('Called Azure ServiceName completer at {0}' -f (Get-Date))
@@ -134,11 +119,6 @@ function CloudService_ServiceNameCompleter
 #
 function Subscription_SubscriptionNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'SubscriptionName',
-        Command = { Get-CommandWithParameter -Module Azure -ParameterName SubscriptionName },
-        Description = 'Complete the -SubscriptionName parameter value for Azure cmdlets:  Select-AzureSubscription -SubscriptionName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     #Write-Verbose -Message ('Called Azure SubscriptionName completer at {0}' -f (Get-Date))
@@ -183,11 +163,6 @@ function Subscription_SubscriptionNameCompleter
 #
 function AzureVirtualMachine_NameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = { Get-CommandWithParameter -Module Azure -ParameterName Name -Noun AzureVM },
-        Description = 'Complete the -Name parameter value for Azure virtual machine cmdlets:  Stop-AzureVM -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     #Write-Verbose -Message ('Called Azure Virtual Machine Name completer at {0}' -f (Get-Date))
@@ -218,3 +193,38 @@ function AzureVirtualMachine_NameCompleter
     ### Return the fresh completion results
     return $ItemList
 }
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Azure -ParameterName StorageAccountName ) `
+    -Parameter 'StorageAccountName' `
+    -Description 'Complete the -StorageAccountName parameter value for Azure cmdlets:  Get-AzureStorageAccount -StorageAccountName <TAB>' `
+    -ScriptBlock $function:StorageAccount_StorageAccountNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Azure -ParameterName Name -Name *container* ) `
+    -Parameter 'Name' `
+    -Description 'Complete the -Name parameter value for Azure cmdlets:  Get-AzureStorageContainer -Context $Context -Name <TAB>' `
+    -ScriptBlock $function:AzureStorage_StorageContainerNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Azure -ParameterName ServiceName ) `
+    -Parameter 'ServiceName' `
+    -Description 'Complete the -ServiceName parameter value for Azure cmdlets:  Get-AzureService -ServiceName <TAB>' `
+    -ScriptBlock $function:CloudService_ServiceNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Azure -ParameterName SubscriptionName ) `
+    -Parameter 'SubscriptionName' `
+    -Description 'Complete the -SubscriptionName parameter value for Azure cmdlets:  Select-AzureSubscription -SubscriptionName <TAB>' `
+    -ScriptBlock $function:Subscription_SubscriptionNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ( Get-CommandWithParameter -Module Azure -ParameterName Name -Noun AzureVM ) `
+    -Parameter 'Name' `
+    -Description 'Complete the -Name parameter value for Azure virtual machine cmdlets:  Stop-AzureVM -Name <TAB>' `
+    -ScriptBlock $function:AzureVirtualMachine_NameCompleter
