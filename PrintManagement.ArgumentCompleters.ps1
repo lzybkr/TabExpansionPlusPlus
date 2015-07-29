@@ -84,7 +84,7 @@ Register-ArgumentCompleter `
 
 
 Register-ArgumentCompleter `
-    -Command ( Get-Command -Module PrintManagement -ParameterName PrinterName ) `
+    -Command ( 'Add-PrinterPort', 'Get-PrintConfiguration', 'Get-PrinterProperty', 'Get-PrintJob', 'Remove-PrintJob', 'Restart-PrintJob', 'Resume-PrintJob', 'Set-PrintConfiguration', 'Set-PrinterProperty', 'Suspend-PrintJob' ) `
     -Parameter 'PrinterName' `
     -Description 'Complete printer names' `
     -ScriptBlock $function:PrinterNameArgumentCompletion
