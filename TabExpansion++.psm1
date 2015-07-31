@@ -990,6 +990,6 @@ Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
 
 foreach ($file in dir $PSScriptRoot\*.ArgumentCompleters.ps1)
 {
-    & $file.FullName
+    . $file.FullName
 }
 
