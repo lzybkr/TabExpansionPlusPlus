@@ -31,7 +31,7 @@ LONG DESCRIPTION
         Get-Process -Name <TAB>   # complete process names
 
     PowerShell has built in argument completion support for many commands.
-    For commands with no build in support, PowerShell will try to find
+    For commands with no built in support, PowerShell will try to find
     a user provided handler.
 
     For PowerShell commands (cmdlets, scripts, functions), you can provide
@@ -95,29 +95,13 @@ LONG DESCRIPTION
 
   REGISTERING ARGUMENT COMPLETERS
 
-    When TabExpansion++ is loaded, it searches all ps1 and psm1 files in
-    the paths $env:PSModulePath and $env:PSArgumentCompleterPath for
-    functions with the ArgumentCompleter attribute.  When TabExpansion++
-    sees a function with this attribute, it extracts the function body
-    and "imports" it into the TabExpansion++ module.
-    
-    This means you can simply define a function in just the right way 
-    and make sure it's defined somewhere that TabExpansion++ will search.
-    You don't need to call any commands to register the argument completer.
-
-    Alternatively, you can use the function Register-ArgumentCompleter.
-    This approach may also required if your argument completer does
-    anything particular complicated, for example if it depends on some
-    module state that isn't accessible from the TabExpansion++ module.
+    You the function Register-ArgumentCompleter to register argument
+    completers.
 
     Here is a complete example to handle: Get-Command -Verb <TAB>
 
       function VerbCompletion
       {
-          [ArgumentCompleter(
-              Parameter = 'Verb',
-              Command = 'Get-Command',
-              Description = 'Complete valid verbs for: Get-Command -Verb <TAB>')]
           param($commandName,
 	        $parameterName,
 		$wordToComplete,
@@ -130,9 +114,15 @@ LONG DESCRIPTION
               }   
       }
 
+      Register-ArgumentCompleter `
+          -Command Get-Command `
+          -Parameter Verb `
+          -Description 'Complete valid verbs for: Get-Command -Verb <TAB>' `
+          -ScriptBlock $function:VerbCompletion
+
     By convention, TabExpansionPlusPlus completers are placed in files with
     ArgumentCompleters as part of the name but they can be in any ps1 or psm1
-    file that is in the search paths.
+    file.
 
   WRITING CUSTOM ARGUMENT COMPLETERS
 
@@ -208,25 +198,15 @@ LONG DESCRIPTION
  
     These functions are simple wrappers around a hashtable that is kept in the
     TabExpansion++ module.  You should prefer these functions over using
-    global variables or module scoped variables because your custom completer
-    is being executed in the scope of TabExpansion++.
+    global variables if your completer is defined in a script.  If your
+    completer is defined in a module, a module scoped variable is a better
+    because the data will be removed if the module is unloaded.
     
     One strategy to caching is to build the cache the first time your
     completer runs.  This is memory efficient, but if the cache takes a long
     time to build, you might not get any Intellisense the first time around
     or worse, the pipeline might get stopped and your completer never gets
     a chance to save the expensive work it did to build the cache.
-
-    TabExpansion++ provides an alternative to initialize your cache when
-    TabExpansion++ is loaded.  If you use the InitializeArgumentCompleter
-    on a function, your function is run while loading TabExpansion++.  The
-    value you return from your function is stored by calling
-    Set-CompletionPrivateData using the key specified in the attribute.
-    This function will run in the background, so there are no worries about
-    slowing down loading the module.  
-
-    See the function InitClassIdTable in the module TabExpansion++ for an
-    example of how to use this attribute.
 
   COMPLETERS FOR NATIVE COMMAND TREES
 
@@ -263,11 +243,6 @@ LONG DESCRIPTION
     PS> $line = 'Get-PSSnapin -Name '
     PS> TabExpansion2 -inputScript $line -cursorColumn $line.Length
     Hit Line breakpoint on 'Microsoft.PowerShell.Core.ArgumentCompleters.ps1:62'
-
-    Even though you probably have defined your custom completer as a function,
-    you can't set a breakpoint using the function name because TabExpansion++
-    doesn't ever define your function - it just extracts the body as a
-    ScriptBlock.
 
   CUSTOM COMPLETER SUPPORT FUNCTIONS
 
@@ -313,19 +288,9 @@ LONG DESCRIPTION
         This function completes command arguments based on the context
         from the command line and command tree pased in.
 
-
 POWERSHELL COMPATIBILITY
 
     TabExpansion++ requires PowerShell V3.
-
-PREFERENCE VARIABLES
-
-  $env:PSArgumentCompleterPath
-
-    Specifies a ';' seperated list of directories that TabExpansion++
-    should search.  TabExpansion++ will search for argument completers
-    and initialization functions in all ps1 and psm1 files in each
-    directory specified by this environment variable.
 
 FUNCTIONS
 
@@ -346,81 +311,6 @@ FUNCTIONS
     This function is used to control the behavior of a few minor features
     in TabExpansion++ and in TabExpansion2.
     
-  Update-ArgumentCompleter
-
-    This function forces TabExpansion++ to rescan for argument completers in
-    modules and in the pathes specified by $env:PSArgumentCompleterPath.  This
-    is useful when creating new argument completers or after having installed
-    a new module.
-
-ATTRIBUTES
-
-  ArgumentCompleter
-
-    This attribute is used by TabExpansion++ to register a function as a
-    custom argument completer.  A function may use this attribute mutiple
-    times to be register as a handler for different commands or parameters.
-
-    The attribute has the following named arguments:
-
-    Command
-
-        The command(s) that this completer works with.  The value can be
-	a string, and array of strings, or a ScriptBlock.  If the value
-	is a ScriptBlock, the ScriptBlock is invoked and the values returned
-	are converted to string.
-
-	The most common use of a ScriptBlock is to select all commands
-	with a particular parameter.  The function Get-CommandWithParameter
-	should be used for this purpose as Get-Command -Parameter will
-	return functions where the parameter is an alias and aliased
-	parameters do not work with TabExpansion++ (really TabExpansion2).
-
-	Here is an example that would be used for any command in the module
-	HyperV with a true parameter named Name:
-
-        Command = { Get-CommandWithParameter -Module Hyper-V -Noun VM -ParameterName Name },
-
-    Parameter
-
-        The parameter that this completer works with.  The value must be
-	a single string.  If the completer supports multiple parameters, you
-	must use multiple ArgumentCompleter attributes.  Note that if
-	the parameter is an alias, you won't receive an error, but the
-	completer will never be invoked.
-
-    Native
-
-        Used to specify that the completer is for external commands and not
-	for PowerShell scripts, cmdlets, or functions.  The value for
-	Parameter is ignored if this value is $true.
-
-    Description
-    
-        Optional description of what the completer does, only used by
-	Get-ArgumentCompleter.
-
-  InitializeArgumentCompleter
-
-    This attribute is used by TabExpansin++ to register a function that
-    is to be run when TabExpansion++ is loaded or the command
-    Update-ArgumentCompleters is run.  The function should return a single
-    object which will be cached by TabExpansion++ and is retriveable by
-    a completer by using the command Get-CompletionPrivateData with the
-    same key used in the attribute.
-
-    The function should not depend on any specific runspace state as
-    it is run in a background runspace.  This also means it can run
-    slowly and there shouldn't be any significant impaact on the module
-    load time of TabExpansion++.
-    
-    The attribute has the following arguments:
-
-      Key
-
-        Key is a required positional argument.  It specifies the key that
-	will be used to retrieve the data with Get-CompletionPrivateData.
-
 TYPES
 
   NativeCommandTreeNode
