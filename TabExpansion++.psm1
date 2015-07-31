@@ -533,22 +533,27 @@ function Get-ArgumentCompleter
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
         {
-            if ($Name | Where-Object { $command -like $_ } | Select -First 1)
+            foreach ($n in $Name)
             {
-                $c = $command
-                if ($command -and $parameter) { $c += ':' }
-                $description = $tabExpansionDescriptions["${c}${parameter}${native}"]
-                $completer = [pscustomobject]@{
-                    Command = $command
-                    Parameter = $parameter
-                    Native = $native
-                    Description = $description
-                    ScriptBlock = $scriptblock
-                    File = Split-Path -Leaf -Path $scriptblock.File
-                }
+                if ($command -like $n)
+                {
+                    $c = $command
+                    if ($command -and $parameter) { $c += ':' }
+                    $description = $tabExpansionDescriptions["${c}${parameter}${native}"]
+                    $completer = [pscustomobject]@{
+                        Command = $command
+                        Parameter = $parameter
+                        Native = $native
+                        Description = $description
+                        ScriptBlock = $scriptblock
+                        File = Split-Path -Leaf -Path $scriptblock.File
+                    }
 
-                $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
-                Write-Output $completer
+                    $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
+                    Write-Output $completer
+
+                    break
+                }
             }
         }
 
