@@ -9,6 +9,8 @@
 $oldTabExpansion = $function:TabExpansion
 $oldTabExpansion2 = $function:TabExpansion2
 
+[bool]$updatedTypeData = $false
+
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove =
 {
     if ($null -ne $oldTabExpansion)
@@ -519,6 +521,14 @@ function Get-ArgumentCompleter
     [CmdletBinding()]
     param([string[]]$Name = '*')
 
+    if (!$updatedTypeData)
+    {
+        # Define the default display properties for the objects returned by Get-ArgumentCompleter
+        [string[]]$properties = "Command", "Parameter"
+        Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
+        $updatedTypeData = $true
+    }
+
     function WriteCompleters
     {
         function WriteCompleter($command, $parameter, $native, $scriptblock)
@@ -967,10 +977,6 @@ $tabExpansionDescriptions = @{}
 # And private data for the above completions cached in this hashtable
 $completionPrivateData = @{}
 
-
-# Define the default display properties for the objects returned by Get-ArgumentCompleter
-[string[]]$properties = "Command", "Parameter"
-Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
 
 Export-ModuleMember Get-ArgumentCompleter, Register-ArgumentCompleter,
                     Set-TabExpansionOption, Test-ArgumentCompleter, New-CompletionResult,
