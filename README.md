@@ -84,6 +84,19 @@ The following parameters should be specified in the call to `Register-ArgumentCo
 Register-ArgumentCompleter -CommandName Get-Verb -Parameter Verb -ScriptBlock $function:VerbCompletion -Description 'This argument completer handles the -Verb parameter of the Get-Verb command.'
 ```
 
+Note that PowerShell V5 has a cmdlet named `Register-ArgumentCompleter`. This cmdlet is very similar to the function in TabExpansionPlusPlus with two key differences: the V5 cmdlet does not have a -Description parameter, and there is no way to list the registered completers if you use the V5 cmdlet.
+
+Module authors that target V3 and beyond that provide argument completion for their module that works with TabExpansionPlusPlus and/or PowerShell V5 should use the following pattern:
+
+```
+if (Get-Command Register-ArgumentCompleter -ea Ignore)
+{
+    Register-ArgumentCompleter -Command $Command -Parameter $Parameter -ScriptBlock { ... }
+}
+```
+
+This way, there is no need to override the TabExpansion or TabExpansion2 functions, just suggest that users of your module use PowerShell V5 or TabExpansionPlusPlus.
+
 ## Testing Your Argument Completer
 
 After you have created your custom argument completer function, and registered it, you should test auto-completion to ensure that the function is working as expected. The TabExpansionPlusPlus module includes a command to aid in this testing called `Test-ArgumentCompleter`.

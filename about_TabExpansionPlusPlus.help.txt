@@ -138,7 +138,7 @@ LONG DESCRIPTION
     needing TabExpansionPlusPlus.  The recommendation is that module authors
     that want to register argument completers use the following pattern:
 
-      if (Get-Command Register-ArgumentComplter -ea Ignore)
+      if (Get-Command Register-ArgumentCompleter -ea Ignore)
       {
           Register-ArgumentCompleter `
               -Command Get-Command `
