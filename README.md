@@ -1,5 +1,7 @@
 ﻿TabExpansionPlusPlus
 ====================
+*Important note:* The module was formerly known as TabExpansion++.  It is now TabExpansionPlusPlus.
+
 Starting with PowerShell version 3.0, there is excellent support for tab expansion and Intellisense, but it is missing some useful features. This module addresses some of those shortcomings.
 
 TabExpansionPlusPlus adds support for the following:
@@ -26,19 +28,19 @@ When you import the TabExpansionPlusPlus module, all of the default argument com
 
 Installing
 ----------
-To install in your personal modules folder (e.g. ~\Documents\WindowsPowerShell\Modules), run:
+If you have PowerShell V5, or have installed [PowerShellGet](https://www.microsoft.com/en-us/download/details.aspx?id=49186) for V3, you can install right away with:
+
+```powershell
+Install-Module TabExpansionPlusPlus
+```
+
+Alternatively, you can install in your personal modules folder (e.g. ~\Documents\WindowsPowerShell\Modules), iwith:
 
 ```powershell
 iex (new-object System.Net.WebClient).DownloadString('https://raw.github.com/lzybkr/TabExpansionPlusPlus/master/Install.ps1')
 ```
 
 If you want to install elsewhere, you can download Install.ps1 (using the URL above) and run it, passing in the directory you want to install.
-
-If you have PsGet, you can run:
-
-```powershell
-Install-Module -ModuleUrl https://github.com/lzybkr/TabExpansionPlusPlus/zipball/master/ -ModuleName TabExpansion++ -Type ZIP
-```
 
 # Custom Argument Completers
 
