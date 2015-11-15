@@ -1,6 +1,6 @@
 #############################################################################
 #
-# TabExpansion++
+# TabExpansionPlusPlus
 #
 #
 
@@ -409,7 +409,7 @@ function Register-ArgumentCompleter
 
     if ($MyInvocation.ScriptName -ne (& { $MyInvocation.ScriptName }))
     {
-        # Make an unbound copy of the script block so it has access to TabExpansion++ when invoked.
+        # Make an unbound copy of the script block so it has access to TabExpansionPlusPlus when invoked.
         # We can skip this step if we created the script block (Register-ArgumentCompleter was
         # called internally).
         if ($fnDefn -ne $null){
@@ -525,7 +525,7 @@ function Get-ArgumentCompleter
     {
         # Define the default display properties for the objects returned by Get-ArgumentCompleter
         [string[]]$properties = "Command", "Parameter"
-        Update-TypeData -TypeName 'TabExpansion++.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
+        Update-TypeData -TypeName 'TabExpansionPlusPlus.ArgumentCompleter' -DefaultDisplayPropertySet $properties -Force
         $updatedTypeData = $true
     }
 
@@ -549,7 +549,7 @@ function Get-ArgumentCompleter
                         File = Split-Path -Leaf -Path $scriptblock.File
                     }
 
-                    $completer.PSTypeNames.Add('TabExpansion++.ArgumentCompleter')
+                    $completer.PSTypeNames.Add('TabExpansionPlusPlus.ArgumentCompleter')
                     Write-Output $completer
 
                     break

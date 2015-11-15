@@ -1,16 +1,16 @@
 TOPIC
-    about_TabExpansion++ 
+    about_TabExpansionPlusPlus
 
 SHORT DESCRIPTION
-    TabExpansion++ extends the tab expansion and Intellisense features of
-    PowerShell to help make PowerShell scripters more productive.
+    TabExpansionPlusPlus extends the tab expansion and Intellisense features
+    of PowerShell to help make PowerShell scripters more productive.
 
 LONG DESCRIPTION
     V3 of PowerShell has excellent support for tab expansion and
     Intellisense, but it is missing some useful features. This module
     addresses some of those shortcomings.
 
-    TabExpansion++ adds support for the following:
+    TabExpansionPlusPlus adds support for the following:
 
     * Complete attribute argument names, e.g.
             [CmdletBinding(Def<TAB>
@@ -21,7 +21,7 @@ LONG DESCRIPTION
     * Easily set options like 'IgnoreHiddenShares'.
 
     In addition to making it simple to add custom argument completion,
-    TabExpansion++ provides many useful custom argument completers that
+    TabExpansionPlusPlus provides many useful custom argument completers that
     can also serve as good examples of how to add your own.
 
   CUSTOM ARGUMENT COMPLETION
@@ -46,7 +46,7 @@ LONG DESCRIPTION
     no parameter metadata, so custom argument handlers are dispatched based
     on the command name.
 
-    TabExpansion++ makes it simple to write a handler by providing functions
+    TabExpansionPlusPlus makes it simple to write a handler by providing functions
     to register the handler and to create the result object that PowerShell
     requires.
 
@@ -61,10 +61,16 @@ LONG DESCRIPTION
                 $commandAst,
                 $fakeBoundParameters)
 
-      Native commands:
+      Native commands (PowerShell V3 or V4):
 
           param($wordToComplete,
                 $commandAst)
+
+      Native commands (PowerShell V5 and beyond):
+
+          param($wordToComplete,
+                $commandAst,
+                $cursor)
 
     PowerShell will pass the following values for these parameters:
 
@@ -92,6 +98,10 @@ LONG DESCRIPTION
         determined safely by PowerShell, if this is the case, there
 	won't be a key with the parameter even though it appears on
         the command line.
+
+      $cursor
+        This value is the index of the cursor where completion was invoked.
+        It is only available in PowerShell V5 and beyond.
 
   REGISTERING ARGUMENT COMPLETERS
 
@@ -123,6 +133,26 @@ LONG DESCRIPTION
     By convention, TabExpansionPlusPlus completers are placed in files with
     ArgumentCompleters as part of the name but they can be in any ps1 or psm1
     file.
+
+    PowerShell V5 adds support for registering argument completers without
+    needing TabExpansionPlusPlus.  The recommendation is that module authors
+    that want to register argument completers use the following pattern:
+
+      if (Get-Command Register-ArgumentComplter -ea Ignore)
+      {
+          Register-ArgumentCompleter `
+              -Command Get-Command `
+              -Parameter Verb `
+              -ScriptBlock $function:VerbCompletion
+      }
+
+    Note that this example does not use the -Description parameter because
+    it is only available in the function from TabExpansionPlusPlus.  PowerShell's
+    builtin cmdlet does not have this parameter.
+
+    When registering this way, a module author can avoid errors while working
+    with PowerShell V5 with no extra modules installed, or with TabExpansionPlusPlus
+    installed when using any version of PowerShell V3 or greater.
 
   WRITING CUSTOM ARGUMENT COMPLETERS
 
@@ -179,7 +209,7 @@ LONG DESCRIPTION
     for the tooltip.  Last, it automatically adds quotes to your completion
     text if quotes would be required.
 
-    TabExpansion++ contains many good examples of how to write your own
+    TabExpansionPlusPlus contains many good examples of how to write your own
     custom completers, be sure to look at a few to see the sorts of things
     you can do.
 
@@ -187,7 +217,7 @@ LONG DESCRIPTION
 
     Automatic Intellisense in the ISE times out after 500ms, so if your
     completer runs slowly, it may not be useful for Intellisense.  Sometimes
-    it is possible to cache data to speed up your completer.  TabExpansion++
+    it is possible to cache data to speed up your completer.  TabExpansionPlusPlus
     provides a couple of useful utilities to help.
 
     First, there are two functions to give you simple way to save and retrive
@@ -197,7 +227,7 @@ LONG DESCRIPTION
         Get-CompletionPrivateData
  
     These functions are simple wrappers around a hashtable that is kept in the
-    TabExpansion++ module.  You should prefer these functions over using
+    TabExpansionPlusPlus module.  You should prefer these functions over using
     global variables if your completer is defined in a script.  If your
     completer is defined in a module, a module scoped variable is a better
     because the data will be removed if the module is unloaded.
@@ -230,7 +260,7 @@ LONG DESCRIPTION
 
     should only complete services that are started.  You can do this by specifing
     a sub-command that is a script block.  See the function NetExeCompletion in
-    the module TabExpansion++ for an example of all of the capabilities of
+    the module TabExpansionPlusPlus for an example of all of the capabilities of
     New-CommandTree.
 
   DEBUGGING A CUSTOM COMPLETER
@@ -246,7 +276,7 @@ LONG DESCRIPTION
 
   CUSTOM COMPLETER SUPPORT FUNCTIONS
 
-    TabExpansion++ provides several functions that are useful for argument
+    TabExpansionPlusPlus provides several functions that are useful for argument
     completers but are not exported because they are not useful outside of
     argument completion.  Those functions are described here:
 
@@ -290,7 +320,7 @@ LONG DESCRIPTION
 
 POWERSHELL COMPATIBILITY
 
-    TabExpansion++ requires PowerShell V3.
+    TabExpansionPlusPlus requires PowerShell V3 or later.
 
 FUNCTIONS
 
@@ -306,10 +336,13 @@ FUNCTIONS
     this function can be used in situations where the attribute might not
     be convenient.
 
+    Note that this function is also a cmdlet in PowerShell V5, but with
+    one small difference - the cmdlet does not have a -Description parameter.
+
   Set-TabExpansionOption
   
     This function is used to control the behavior of a few minor features
-    in TabExpansion++ and in TabExpansion2.
+    in TabExpansionPlusPlus and in TabExpansion2.
     
 TYPES
 
@@ -344,7 +377,7 @@ TYPES
                     $commandAst)
     
     The function New-CommandTree can be used to simplify constructing the command
-    tree.  TabExpansion++ does not define an alias for this function, but it is
+    tree.  TabExpansionPlusPlus does not define an alias for this function, but it is
     suggested to define an alias locally in your completer function, for examples
     see NetExeCompletion or NetshExeCompletion in WindowsExe.ArgumentCompleters.ps1.
 
@@ -352,7 +385,7 @@ FEEDBACK
 
     https://github.com/lzybkr/TabExpansionPlusPlus
    
-CONTRIBUTING TO TABEXPANSION++
+CONTRIBUTING TO TABEXPANSIONPLUSPLUS
 
     If you write any generally useful custom argument completers or if
     you add any other useful additions, feel free to submit a pull
@@ -362,6 +395,6 @@ SEE ALSO
 
     PowerTab is highly recommended if you use PowerShell V2.  PowerTab also
     provides an Intellisense like UI for the console which makes it a nice
-    alternative to TabExpansion++.  In V3, other than the UI, the capabilities
-    of TabExpansion++ and PowerTab are very similar.
+    alternative to TabExpansionPlusPlus  In V3, other than the UI, the capabilities
+    of TabExpansionPlusPlus and PowerTab are very similar.
 
