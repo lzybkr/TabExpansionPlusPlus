@@ -1,8 +1,8 @@
-﻿TabExpansion++
-==============
+﻿TabExpansionPlusPlus
+====================
 Starting with PowerShell version 3.0, there is excellent support for tab expansion and Intellisense, but it is missing some useful features. This module addresses some of those shortcomings.
 
-TabExpansion++ adds support for the following:
+TabExpansionPlusPlus adds support for the following:
 
 * Easily add custom argument completion.
 * Complete attribute argument names, e.g.
@@ -12,17 +12,17 @@ TabExpansion++ adds support for the following:
 * Exclude hidden files from results.
 * Easily set options like 'IgnoreHiddenShares'.
 
-In addition to making it simple to add custom argument completion, TabExpansion++ provides many useful custom argument completers "out of box" that can also serve as good examples of how to add your own.
+In addition to making it simple to add custom argument completion, TabExpansionPlusPlus provides many useful custom argument completers "out of box" that can also serve as good examples of how to add your own.
 
 Usage
 -----
 Assuming you've installed the module somewhere in your module path, just import the module in your profile, e.g.:
 
 ```powershell
-Import-Module TabExpansion++
+Import-Module TabExpansionPlusPlus
 ```
 
-When you import the TabExpansion++ module, all of the default argument completer functions will be available to you. However, you can create your own argument completer functions to auto-complete parameter values for your own functions.
+When you import the TabExpansionPlusPlus module, all of the default argument completer functions will be available to you. However, you can create your own argument completer functions to auto-complete parameter values for your own functions.
 
 Installing
 ----------
@@ -73,7 +73,7 @@ After you have created a custom argument completer function, the `Register-Argum
 
 The following parameters should be specified in the call to `Register-ArgumentCompleter`:
 
-- `-Command` = An array of PowerShell command names that share a parameter. You can pass in a static array of command values or dynamically obtain them using `Get-Command` (PowerShell Core) or `Get-CommandWithParameter` (TabExpansion++)
+- `-Command` = An array of PowerShell command names that share a parameter. You can pass in a static array of command values or dynamically obtain them using `Get-Command` (PowerShell Core) or `Get-CommandWithParameter` (TabExpansionPlusPlus)
 - `-Parameter` = The name of the parameter that the auto-completer function will auto-complete values for.
 - `-Description` = A description of the registered argument completer.
 - `-ScriptBlock` = The PowerShell `ScriptBlock` that will be executed when the argument completer is invoked.
@@ -84,7 +84,7 @@ Register-ArgumentCompleter -CommandName Get-Verb -Parameter Verb -ScriptBlock $f
 
 ## Testing Your Argument Completer
 
-After you have created your custom argument completer function, and registered it, you should test auto-completion to ensure that the function is working as expected. The TabExpansion++ module includes a command to aid in this testing called `Test-ArgumentCompleter`.
+After you have created your custom argument completer function, and registered it, you should test auto-completion to ensure that the function is working as expected. The TabExpansionPlusPlus module includes a command to aid in this testing called `Test-ArgumentCompleter`.
 
 At a minimum, you must specify the following parameters to `Test-ArgumentCompleter`:
 

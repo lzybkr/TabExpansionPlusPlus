@@ -2,7 +2,7 @@
 param([string]$InstallDirectory)
 
 $fileList = @(
-    'about_TabExpansion++.help.txt',
+    'about_TabExpansionPlusPlus.help.txt',
     'CimCmdlets.ArgumentCompleters.ps1',
     'Dism.ArgumentCompleters.ps1',
     'DnsClient.ArgumentCompleters.ps1',
@@ -20,9 +20,9 @@ $fileList = @(
     'ScheduledTasks.ArgumentCompleters.ps1',
     'SmbShare.ArgumentCompleters.ps1',
     'Storage.ArgumentCompleters.ps1',
-    'TabExpansion++.ArgumentCompleters.ps1',
-    'TabExpansion++.psd1',
-    'TabExpansion++.psm1',
+    'TabExpansionPlus.ArgumentCompleters.ps1',
+    'TabExpansionPlusPlus.psd1',
+    'TabExpansionPlus.psm1',
     'Wdac.ArgumentCompleters.ps1',
     'WindowsExe.ArgumentCompleters.ps1',
     'WindowsExe.Messages.psd1',
@@ -43,7 +43,7 @@ if ('' -eq $InstallDirectory)
         Write-Error "$personalModules does not exist"
     }
 
-    $InstallDirectory = Join-Path -Path $personalModules -ChildPath TabExpansion++
+    $InstallDirectory = Join-Path -Path $personalModules -ChildPath TabExpansionPlusPlus
 }
 
 if (!(Test-Path $InstallDirectory))
