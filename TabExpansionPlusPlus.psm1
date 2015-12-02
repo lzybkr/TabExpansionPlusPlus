@@ -546,7 +546,7 @@ function Get-ArgumentCompleter
                         Native = $native
                         Description = $description
                         ScriptBlock = $scriptblock
-                        File = Split-Path -Leaf -Path $scriptblock.File
+                        File = if ($scriptblock.File) { Split-Path -Leaf -Path $scriptblock.File }
                     }
 
                     $completer.PSTypeNames.Add('TabExpansionPlusPlus.ArgumentCompleter')
