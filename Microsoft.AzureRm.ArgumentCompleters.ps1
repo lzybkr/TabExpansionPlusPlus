@@ -13,6 +13,7 @@ function AzureGeneral_LocationCompleter
 {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
+
     ### Attempt to read Azure location details from the cache
     $CacheKey = 'AzureGeneral_LocationCache'
     $LocationCache = Get-CompletionPrivateData -Key $CacheKey
@@ -37,7 +38,9 @@ function AzureGeneral_LocationCompleter
     }
         
     ### Return the fresh completion results
-    return $ItemList | Where-Object { $PSItem.CompletionText.StartsWith($wordToComplete, "InvariantCultureIgnoreCase") -or $PSItem.ListItemText.StartsWith($wordToComplete, "InvariantCultureIgnoreCase")}
+    $wordToCompleteWildcard = $wordToComplete + "*"
+
+    return $ItemList | Where-Object { ($PSItem.CompletionText -like $wordToCompleteWildcard) -or ($PSItem.ListItemText -like $wordToCompleteWildcard)}
 }
 
 Register-ArgumentCompleter `
