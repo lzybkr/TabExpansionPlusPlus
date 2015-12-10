@@ -24,19 +24,21 @@ function AzureGeneral_LocationCompleter
     } else {
         ### Create fresh completion results for Azure locations
         $ItemList = Get-AzureRmResourceProvider | Select-Object -ExpandProperty ResourceTypes | Select-Object -ExpandProperty Locations -Unique | Sort-Object | Foreach-Object {
-            $CompletionResult = @{
-                CompletionText = $PSItem
-                ToolTip = $PSItem
-                ListItemText = $PSItem
-                CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue
-                }
-            New-CompletionResult @CompletionResult
+            if($PSItem -ne $null -and $PSItem -ne ""){
+                $CompletionResult = @{
+                    CompletionText = $PSItem
+                    ToolTip = $PSItem
+                    ListItemText = $PSItem
+                    CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue
+                    }
+                New-CompletionResult @CompletionResult
+            }
         }
         
-        ### Update the cache for Azure locations
+        # Update the cache for Azure locations
         Set-CompletionPrivateData -Key $CacheKey -Value $ItemList
     }
-        
+    
     ### Return the fresh completion results
     $wordToCompleteWildcard = $wordToComplete + "*"
 
