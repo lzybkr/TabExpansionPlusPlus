@@ -23,26 +23,29 @@ function AzureGeneral_LocationCompleter
         $ItemList = $LocationCache
     } else {
         ### Create fresh completion results for Azure locations
-        $ItemList = Get-AzureRmResourceProvider | Select-Object -ExpandProperty ResourceTypes | Select-Object -ExpandProperty Locations -Unique | Sort-Object | Foreach-Object {
-            if($PSItem -ne $null -and $PSItem -ne ""){
-                $CompletionResult = @{
-                    CompletionText = $PSItem
-                    ToolTip = $PSItem
-                    ListItemText = $PSItem
-                    CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue
-                    }
-                New-CompletionResult @CompletionResult
-            }
-        }
-        
+        $ItemList = Get-AzureRmResourceProvider | Select-Object -ExpandProperty ResourceTypes | Select-Object -ExpandProperty Locations -Unique | Sort-Object
+
         # Update the cache for Azure locations
         Set-CompletionPrivateData -Key $CacheKey -Value $ItemList
     }
     
     ### Return the fresh completion results
-    $wordToCompleteWildcard = $wordToComplete + "*"
+    $wordToCompleteWildcard = $wordToComplete.Trim("'") + "*"
 
-    return $ItemList | Where-Object { ($PSItem.CompletionText -like $wordToCompleteWildcard) -or ($PSItem.ListItemText -like $wordToCompleteWildcard)}
+    $results = $ItemList `
+            | Where-Object { $PSItem -like $wordToCompleteWildcard} `
+            | Foreach-Object {
+                if($PSItem -ne $null -and $PSItem -ne ""){
+                    $CompletionResult = @{
+                        CompletionText = $PSItem
+                        ToolTip = $PSItem
+                        ListItemText = $PSItem
+                        CompletionResultType = [System.Management.Automation.CompletionResultType]::ParameterValue
+                        }
+                    New-CompletionResult @CompletionResult
+                }
+            }
+    return $results
 }
 
 Register-ArgumentCompleter `
