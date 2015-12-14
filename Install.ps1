@@ -10,6 +10,7 @@ $fileList = @(
     'ISE.ArgumentCompleters.ps1',
     'License.txt',
     'Microsoft.Azure.ArgumentCompleters.ps1',
+    'Microsoft.AzureRm.ArgumentCompleters.ps1',
     'Microsoft.PowerShell.Core.ArgumentCompleters.ps1',
     'Microsoft.PowerShell.Diagnostics.ArgumentCompleters.ps1',
     'Microsoft.PowerShell.Management.ArgumentCompleters.ps1',
