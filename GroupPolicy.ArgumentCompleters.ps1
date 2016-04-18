@@ -72,7 +72,7 @@ function GroupPolicy_StarterGPOGUIDArgumentCompletion
     }
 
     GroupPolicy\Get-GPStarterGPO -All @optionalDomain | 
-        Where-Object {$_.Id -like "$wordToComplete*"} |
+        Where-Object {$_.DisplayName -like "$wordToComplete*"} |
         Sort-Object -Property DisplayName |
         ForEach-Object {
             $ToolTip = "Name: {0} - GUID: {1}" -f $_.DisplayName,$_.Id 
