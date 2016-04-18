@@ -13,8 +13,7 @@ function GroupPolicy_GPONameArgumentCompletion
     }
 
     GroupPolicy\Get-GPO -All @optionalDomain |
-        Select-Object -Property DisplayName,Id |
-        Where-Object {$_.DisplayName -match "$wordToComplete"} |
+        Where-Object {$_.DisplayName -like "$wordToComplete*"} |
         Sort-Object -Property DisplayName |
         ForEach-Object {
             $ToolTip = "Name: {0} - GUID: {1}" -f $_.DisplayName,$_.Id 
@@ -33,8 +32,7 @@ function GroupPolicy_GPOGUIDArgumentCompletion
     }
 
     GroupPolicy\Get-GPO -All @optionalDomain |
-        Select-Object -Property DisplayName,Id |
-        Where-Object {$_.Id -match "$wordToComplete"} |
+        Where-Object {$_.DisplayName -like "$wordToComplete*"} |
         Sort-Object -Property DisplayName |
         ForEach-Object {
             $ToolTip = "Name: {0} - GUID: {1}" -f $_.DisplayName,$_.Id 
@@ -55,8 +53,7 @@ function GroupPolicy_StarterGPONameArgumentCompletion
     }
 
     GroupPolicy\Get-GPStarterGPO -All @optionalDomain | 
-        Select-Object -Property DisplayName,Id |
-        Where-Object {$_.DisplayName -match "$wordToComplete"} |
+        Where-Object {$_.DisplayName -like "$wordToComplete*"} |
         Sort-Object -Property DisplayName |
         ForEach-Object {
             $ToolTip = "Name: {0} - GUID: {1}" -f $_.DisplayName,$_.Id 
@@ -75,8 +72,7 @@ function GroupPolicy_StarterGPOGUIDArgumentCompletion
     }
 
     GroupPolicy\Get-GPStarterGPO -All @optionalDomain | 
-        Select-Object -Property DisplayName,Id |
-        Where-Object {$_.Id -match "$wordToComplete"} |
+        Where-Object {$_.Id -like "$wordToComplete*"} |
         Sort-Object -Property DisplayName |
         ForEach-Object {
             $ToolTip = "Name: {0} - GUID: {1}" -f $_.DisplayName,$_.Id 
