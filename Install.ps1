@@ -2,35 +2,43 @@
 param([string]$InstallDirectory)
 
 $fileList = @(
-    'about_TabExpansionPlusPlus.help.txt',
-    'CimCmdlets.ArgumentCompleters.ps1',
-    'Dism.ArgumentCompleters.ps1',
-    'DnsClient.ArgumentCompleters.ps1',
-    'Hyper-V.ArgumentCompleters.ps1',
-    'ISE.ArgumentCompleters.ps1',
-    'License.txt',
-    'Microsoft.Azure.ArgumentCompleters.ps1',
-    'Microsoft.AzureRm.ArgumentCompleters.ps1',
-    'Microsoft.PowerShell.Core.ArgumentCompleters.ps1',
-    'Microsoft.PowerShell.Diagnostics.ArgumentCompleters.ps1',
-    'Microsoft.PowerShell.Management.ArgumentCompleters.ps1',
-    'Microsoft.PowerShell.Utility.ArgumentCompleters.ps1',
-    'NetSecurity.ArgumentCompleters.ps1',
-    'NetTCPIP.ArgumentCompleters.ps1',
-    'NetAdapter.ArgumentCompleters.ps1',
-    'PowerShellWebAccess.ArgumentCompleters.ps1',
-    'PrintManagement.ArgumentCompleters.ps1',
-    'RobocopyExe.ArgumentCompleters.ps1',
-    'ScheduledTasks.ArgumentCompleters.ps1',
-    'SmbShare.ArgumentCompleters.ps1',
-    'Storage.ArgumentCompleters.ps1',
-    'TabExpansionPlusPlus.ArgumentCompleters.ps1',
-    'TabExpansionPlusPlus.psd1',
-    'TabExpansionPlus.psm1',
-    'Wdac.ArgumentCompleters.ps1',
-    'WindowsExe.ArgumentCompleters.ps1',
-    'WindowsExe.Messages.psd1',
-    'Snippets/ArgumentCompleterFunction.snippets.ps1xml'
+### Base module files
+    'TabExpansionPlus.psm1'
+    'TabExpansionPlusPlus.psd1'
+    'about_TabExpansionPlusPlus.help.txt'
+    'License.txt'
+    'Convert-ArgumentCompleterRegistrationScript.ps1'
+
+### Completers
+    'Appx.ArgumentCompleters.ps1'
+    'CimCmdlets.ArgumentCompleters.ps1'
+    'Dism.ArgumentCompleters.ps1'
+    'DnsClient.ArgumentCompleters.ps1'
+    'GroupPolicy.ArgumentCompleters.ps1'
+    'Hyper-V.ArgumentCompleters.ps1'
+    'ISE.ArgumentCompleters.ps1'
+    'Microsoft.Azure.ArgumentCompleters.ps1'
+    'Microsoft.AzureRm.ArgumentCompleters.ps1'
+    'Microsoft.PowerShell.Core.ArgumentCompleters.ps1'
+    'Microsoft.PowerShell.Diagnostics.ArgumentCompleters.ps1'
+    'Microsoft.PowerShell.Management.ArgumentCompleters.ps1'
+    'Microsoft.PowerShell.Utility.ArgumentCompleters.ps1'
+    'NetAdapter.ArgumentCompleters.ps1'
+    'NetLbfo.ArgumentCompleters.ps1'
+    'NetQos.ArgumentCompleters.ps1'
+    'NetSecurity.ArgumentCompleters.ps1'
+    'NetTCPIP.ArgumentCompleters.ps1'
+    'Pnpdevice.ArgumentCompleters.ps1'
+    'PowerShellWebAccess.ArgumentCompleters.ps1'
+    'PrintManagement.ArgumentCompleters.ps1'
+    'RobocopyExe.ArgumentCompleters.ps1'
+    'ScheduledTasks.ArgumentCompleters.ps1'
+    'SmbShare.ArgumentCompleters.ps1'
+    'Storage.ArgumentCompleters.ps1'
+    'TabExpansionPlusPlus.ArgumentCompleters.ps1'
+    'Wdac.ArgumentCompleters.ps1'
+    'WindowsExe.ArgumentCompleters.ps1'
+    'WindowsExe.Messages.psd1'
 )
 
 
