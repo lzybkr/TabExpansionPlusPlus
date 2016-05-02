@@ -23,7 +23,7 @@ function SmbShareNameParameterCompletion
 
 
 Register-ArgumentCompleter `
-    -Command ('Get-SmbShare', 'Remove-SmbShare', 'Set-SmbShare') `
+    -Command ('Get-SmbShare', 'Remove-SmbShare', 'Set-SmbShare','Block-SmbShareAccess','Get-SmbShareAccess','Grant-SmbShareAccess','Revoke-SmbShareAccess','Unblock-SmbShareAccess') `
     -Parameter 'Name' `
     -Description 'Complete share names.' `
     -ScriptBlock $function:SmbShareNameParameterCompletion
