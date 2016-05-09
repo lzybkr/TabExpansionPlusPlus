@@ -1,5 +1,5 @@
 # ARGUMENT COMPLETER FUNCTIONS #################################################
-# Version 0.96
+# Version 0.97
 
 #CLUSTER
 function FailoverClusters_ClusterArgumentCompletion
@@ -61,7 +61,7 @@ function FailoverClusters_ClusterGroupNameArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterGroup -Name "$wordToComplete*" @OptionalCluster |
         ForEach-Object {
             $Tooltip = "Name: {0} - State: {1} - Owner Node: {2}" -f $_.Name,$_.State,$_.OwnerNode
@@ -78,7 +78,7 @@ function FailoverClusters_ClusterGroupVMIdArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterGroup -Name "*$wordToComplete*" @OptionalCluster |
         Where-Object {$_.GroupType -eq "VirtualMachine"} |
         Hyper-V\Get-VM | 
@@ -98,7 +98,7 @@ function FailoverClusters_ClusterVirtualMachineRoleNameArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterGroup -Name "$wordToComplete*" @OptionalCluster | 
         Where-Object { $_.GroupType -eq 'VirtualMachine'} |
         ForEach-Object {
@@ -116,7 +116,7 @@ function FailoverClusters_ClusterVirtualMachineRoleVMIdArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterGroup -Name "*$wordToComplete*" @OptionalCluster | 
         Where-Object { $_.GroupType -eq 'VirtualMachine'} |
         Hyper-V\Get-VM |
@@ -136,7 +136,7 @@ function FailoverClusters_ClusterResourceNameArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterResource -Name "$wordToComplete*" @OptionalCluster |
         Sort-Object |
         ForEach-Object {
@@ -154,7 +154,7 @@ function FailoverClusters_ClusterResourceVMIdArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterResource -Name "*$wordToComplete*" @OptionalCluster | 
         Where-Object { $_.ResourceType -eq 'Virtual Machine'} |
         Hyper-V\Get-VM |
@@ -174,7 +174,7 @@ function FailoverClusters_ClusterResourceDiskArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterResource -Name "$wordToComplete*" @OptionalCluster |
         Where-Object {$_.ResourceType -eq "Physical Disk" }
         Sort-Object |
@@ -212,7 +212,7 @@ function FailoverClusters_ClusterSharedVolumeNameArgumentCompletion
     {
         $OptionalCluster.Cluster = $Cluster
     }
-
+    # These completions are slow 
     FailoverClusters\Get-ClusterSharedVolume -Name "$wordToComplete*" @OptionalCluster |
         Sort-Object |
         ForEach-Object {
