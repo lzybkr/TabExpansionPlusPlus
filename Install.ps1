@@ -6,6 +6,7 @@ $fileList = @(
     'CimCmdlets.ArgumentCompleters.ps1',
     'Dism.ArgumentCompleters.ps1',
     'DnsClient.ArgumentCompleters.ps1',
+    'FailoverClusters.ArgumentCompleters.ps1'
     'Hyper-V.ArgumentCompleters.ps1',
     'ISE.ArgumentCompleters.ps1',
     'License.txt',
