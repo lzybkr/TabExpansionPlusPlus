@@ -12,6 +12,7 @@ $fileList = @(
 ### Completers
     'Appx.ArgumentCompleters.ps1'
     'CimCmdlets.ArgumentCompleters.ps1'
+    'DhcpServer.ArgumentCompleters.ps1'
     'Dism.ArgumentCompleters.ps1'
     'DnsClient.ArgumentCompleters.ps1'
     'FailoverClusters.ArgumentCompleters.ps1'
