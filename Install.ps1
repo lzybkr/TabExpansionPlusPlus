@@ -13,6 +13,7 @@ $fileList = @(
     'Appx.ArgumentCompleters.ps1'
     'CimCmdlets.ArgumentCompleters.ps1'
     'Dism.ArgumentCompleters.ps1'
+    'DFSR.ArgumentCompleters.ps1'
     'DnsClient.ArgumentCompleters.ps1'
     'FailoverClusters.ArgumentCompleters.ps1'
     'GroupPolicy.ArgumentCompleters.ps1'
