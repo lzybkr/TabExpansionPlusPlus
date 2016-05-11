@@ -15,6 +15,7 @@ $fileList = @(
     'DhcpServer.ArgumentCompleters.ps1'
     'Dism.ArgumentCompleters.ps1'
     'DnsClient.ArgumentCompleters.ps1'
+    'DnsServer.ArgumentCompleters.ps1'
     'FailoverClusters.ArgumentCompleters.ps1'
     'GroupPolicy.ArgumentCompleters.ps1'
     'Hyper-V.ArgumentCompleters.ps1'
