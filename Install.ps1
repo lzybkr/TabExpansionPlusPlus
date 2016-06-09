@@ -35,6 +35,7 @@ $fileList = @(
     'NetTCPIP.ArgumentCompleters.ps1'
     'Pnpdevice.ArgumentCompleters.ps1'
     'PowerShellWebAccess.ArgumentCompleters.ps1'
+    'PowerShellDirect.ArgumentCompleters.ps1'
     'PrintManagement.ArgumentCompleters.ps1'
     'RobocopyExe.ArgumentCompleters.ps1'
     'ScheduledTasks.ArgumentCompleters.ps1'
