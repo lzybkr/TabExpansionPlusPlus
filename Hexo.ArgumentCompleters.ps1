@@ -1,13 +1,11 @@
 function HexoArgumentCompletion{
-    param($commandName, $wordToComplete, $commandAst, $fakeBoundParameter)
+    param($wordToComplete, $commandAst, $cursor)
 
     $HexoCommandList = @('help', 'init', 'version', 'new', 'serve', `
                         '--debug', '--cwd', '--config', '--draft', '--safe', '--silent')
-    $stringWord = [string]$wordToComplete
-    $partialWord = $stringWord.Split(" ")[-1]
     
     $HexoCommandList|ForEach-Object {
-        if("$_" -match "^$partialWord *") {
+        if("$_" -match "^$wordToComplete*") {
             New-CompletionResult -CompletionText $_
         }    
     }
