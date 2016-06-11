@@ -26,6 +26,7 @@ $fileList = @(
     'Microsoft.AzureRm.ArgumentCompleters.ps1'
     'Microsoft.PowerShell.Core.ArgumentCompleters.ps1'
     'Microsoft.PowerShell.Diagnostics.ArgumentCompleters.ps1'
+    'Microsoft.PowerShell.LocalAccounts.ArgumentCompleters.ps1'    
     'Microsoft.PowerShell.Management.ArgumentCompleters.ps1'
     'Microsoft.PowerShell.Utility.ArgumentCompleters.ps1'
     'NetAdapter.ArgumentCompleters.ps1'
