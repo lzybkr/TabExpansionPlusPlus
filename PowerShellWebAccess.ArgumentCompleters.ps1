@@ -7,11 +7,6 @@
 #
 function PowerShellWebAccess_PswaAuthorizationRuleNameParameterCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'RuleName',
-        Command = {'Get-PswaAuthorizationRule','Add-PswaAuthorizationRule'},
-        Description = 'Complete the -RuleName argument to *-PswaAuthorizationRule cmdlets. For example: Get-PswaAuthorizationRule -RuleName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     PowerShellWebAccess\Get-PswaAuthorizationRule | Where-Object RuleName -like "$wordToComplete*" | Sort-Object RuleName | ForEach-Object{
@@ -20,3 +15,8 @@ function PowerShellWebAccess_PswaAuthorizationRuleNameParameterCompleter
 }
 
 
+Register-ArgumentCompleter `
+    -Command ('Get-PswaAuthorizationRule','Add-PswaAuthorizationRule') `
+    -Parameter 'RuleName' `
+    -Description 'Complete the -RuleName argument to *-PswaAuthorizationRule cmdlets. For example: Get-PswaAuthorizationRule -RuleName <TAB>' `
+    -ScriptBlock $function:PowerShellWebAccess_PswaAuthorizationRuleNameParameterCompleter

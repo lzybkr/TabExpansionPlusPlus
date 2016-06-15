@@ -7,10 +7,6 @@
 #
 function Storage_PhysicalDiskFriendlyNameParameterCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'FriendlyName',
-        Command = ('Get-PhysicalDisk', 'Reset-PhysicalDisk', 'Set-PhysicalDisk'),
-        Description = 'Complete physical disk friendly names.')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Storage\Get-PhysicalDisk -FriendlyName "$wordToComplete*" |
@@ -35,11 +31,21 @@ function Storage_PhysicalDiskFriendlyNameParameterCompletion
 #
 function ImagePathArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'ImagePath',
-        Command = 'Mount-DiskImage',
-        Description = 'Complete vhds and isos for Add-Type -LiteralPath')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-CompletionWithExtension $lastWord ('.iso', '.vhd', 'vhdx')
 }
+
+
+Register-ArgumentCompleter `
+    -Command ('Get-PhysicalDisk', 'Reset-PhysicalDisk', 'Set-PhysicalDisk') `
+    -Parameter 'FriendlyName' `
+    -Description 'Complete physical disk friendly names.' `
+    -ScriptBlock $function:Storage_PhysicalDiskFriendlyNameParameterCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Mount-DiskImage' `
+    -Parameter 'ImagePath' `
+    -Description 'Complete vhds and isos for Add-Type -LiteralPath' `
+    -ScriptBlock $function:ImagePathArgumentCompletion

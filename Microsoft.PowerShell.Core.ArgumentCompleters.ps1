@@ -6,10 +6,6 @@
 #
 function HelpParameterNameCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Parameter',
-        Command = ('help','Get-Help'),
-        Description = 'Complete parameter names for get-help, for example: Get-Help -Name Get-ChildItem -Parameter <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $helpCommandName = $fakeBoundParameter['Name']
@@ -53,10 +49,6 @@ function HelpParameterNameCompletion
 #
 function GetSnapinCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = 'Get-PSSnapin',
-        Description = 'Complete loaded snapins for: Get-PSSnapin -Name <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-PSSnapin $wordToComplete* |
@@ -74,10 +66,6 @@ function GetSnapinCompletion
 #
 function AddSnapinCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = 'Add-PSSnapin',
-        Description = 'Complete registered snapins for: Add-PSSnapin -Name <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-PSSnapin -Registered -Name "$wordToComplete*" |
@@ -94,10 +82,6 @@ function AddSnapinCompletion
 #
 function VerbCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Verb',
-        Command = 'Get-Command',
-        Description = 'Complete valid verbs for: Get-Command -Verb <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-Verb "$wordToComplete*" |
@@ -114,10 +98,6 @@ function VerbCompletion
 #
 function NounCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Noun',
-        Command = 'Get-Command',
-        Description = 'Complete nouns for: Get-Command -Noun <TAB>')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalParam = @{}
@@ -142,18 +122,6 @@ function NounCompletion
 #
 function PSSessionConfigurationNameCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'ConfigurationName',
-        Command = ('Connect-PSSession', 'Enter-PSSession',
-                   'Get-PSSession', 'Invoke-Command',
-                   'New-PSSession', 'Receive-PSSession'),
-        Description = @'
-Complete session configuration names for various remoting commands if possible.
-Completion will fail if -ComputerName is not specified or if credentials are required to connect.
-Examples:
-    Invoke-Command localhost -ConfigurationName <TAB>
-    New-PSSession -cn 127.0.0.1 -ConfigurationName <TAB>
-'@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     # These completions are pretty slow because they go through remoting to get the
@@ -177,11 +145,6 @@ Examples:
 #
 function SetStrictMode_VersionCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Version',
-        Command = 'Set-Strictmode',
-        Description = 'Completes Version parameter for Set-StrictMode, for example:  Set-StrictMode -Version <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     '1.0', '2.0', '3.0', 'latest' | where { $_ -like "$wordToComplete*" } |
@@ -197,11 +160,6 @@ function SetStrictMode_VersionCompleter
 #
 function HelpModuleCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Module',
-        Command = ('Save-Help','Update-Help'),
-        Description = 'Completes Module parameter for Save/Update-Help commands, for example:  Save-Help -Module <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
@@ -218,11 +176,6 @@ function HelpModuleCompleter
 #
 function ScopeParameterCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Scope',
-        Command = {Get-CommandWithParameter -Module Microsoft.PowerShell.* -ParameterName Scope},
-        Description = 'Completes the Scope argument for *-Variable, *-Alias, *-PSDrive. For example:  Get-Variable -Scope <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     echo Global Local Script Private | Where-Object {$_ -like "$wordToComplete*"} | ForEach-Object {
@@ -238,11 +191,6 @@ function ScopeParameterCompleter
 #
 function HelpNameCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = ('help','Get-Help'),
-        Description = 'Tab completes names of help articles, for example:  Get-Help -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     # First - commands... but we need to leave All and Application out...
@@ -298,11 +246,6 @@ function HelpNameCompletion
 #
 function ImportModuleNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'Name',
-        Command = 'Import-Module',
-        Description = 'Complete the -Name argument to Import-Module, for example:  Import-Module -Name <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
@@ -310,3 +253,88 @@ function ImportModuleNameCompleter
         New-CompletionResult $_.Name $tooltip
     }
 }
+
+
+Register-ArgumentCompleter `
+    -Command ('help','Get-Help') `
+    -Parameter 'Parameter' `
+    -Description 'Complete parameter names for get-help, for example: Get-Help -Name Get-ChildItem -Parameter <TAB>' `
+    -ScriptBlock $function:HelpParameterNameCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-PSSnapin' `
+    -Parameter 'Name' `
+    -Description 'Complete loaded snapins for: Get-PSSnapin -Name <TAB>' `
+    -ScriptBlock $function:GetSnapinCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Add-PSSnapin' `
+    -Parameter 'Name' `
+    -Description 'Complete registered snapins for: Add-PSSnapin -Name <TAB>' `
+    -ScriptBlock $function:AddSnapinCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-Command' `
+    -Parameter 'Verb' `
+    -Description 'Complete valid verbs for: Get-Command -Verb <TAB>' `
+    -ScriptBlock $function:VerbCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-Command' `
+    -Parameter 'Noun' `
+    -Description 'Complete nouns for: Get-Command -Noun <TAB>' `
+    -ScriptBlock $function:NounCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Connect-PSSession', 'Enter-PSSession',
+                   'Get-PSSession', 'Invoke-Command',
+                   'New-PSSession', 'Receive-PSSession') `
+    -Parameter 'ConfigurationName' `
+    -Description @'
+Complete session configuration names for various remoting commands if possible.
+Completion will fail if -ComputerName is not specified or if credentials are required to connect.
+Examples:
+    Invoke-Command localhost -ConfigurationName <TAB>
+    New-PSSession -cn 127.0.0.1 -ConfigurationName <TAB>
+'@ `
+    -ScriptBlock $function:PSSessionConfigurationNameCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Set-Strictmode' `
+    -Parameter 'Version' `
+    -Description 'Completes Version parameter for Set-StrictMode, for example:  Set-StrictMode -Version <TAB>' `
+    -ScriptBlock $function:SetStrictMode_VersionCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ('Save-Help','Update-Help') `
+    -Parameter 'Module' `
+    -Description 'Completes Module parameter for Save/Update-Help commands, for example:  Save-Help -Module <TAB>' `
+    -ScriptBlock $function:HelpModuleCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ('Clear-Variable','Export-Alias','Get-Alias','Get-PSDrive','Get-Variable','Import-Alias','Import-Module','New-Alias','New-PSDrive','New-Variable','Remove-PSDrive','Remove-Variable','Set-Alias','Set-Variable') `
+    -Parameter 'Scope' `
+    -Description 'Completes the Scope argument for *-Variable, *-Alias, *-PSDrive. For example:  Get-Variable -Scope <TAB>' `
+    -ScriptBlock $function:ScopeParameterCompleter
+
+
+Register-ArgumentCompleter `
+    -Command ('help','Get-Help') `
+    -Parameter 'Name' `
+    -Description 'Tab completes names of help articles, for example:  Get-Help -Name <TAB>' `
+    -ScriptBlock $function:HelpNameCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Import-Module' `
+    -Parameter 'Name' `
+    -Description 'Complete the -Name argument to Import-Module, for example:  Import-Module -Name <TAB>' `
+    -ScriptBlock $function:ImportModuleNameCompleter

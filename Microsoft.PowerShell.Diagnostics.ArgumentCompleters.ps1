@@ -6,14 +6,6 @@
 #
 function CounterParameterCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'Counter',
-        Command = 'Get-Counter',
-        Description = @'
-Complete counter for the Get-Counter cmdlet, optionally on a remote machine. For example:
-    Get-Counter -Counter <TAB>
-    Get-Counter -cn 127.0.0.1 -Counter <TAB>
-'@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -40,14 +32,6 @@ Complete counter for the Get-Counter cmdlet, optionally on a remote machine. For
 #
 function ListSetParameterCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'ListSet',
-        Command = 'Get-Counter',
-        Description = @'
-Complete counter sets for the Get-Counter cmdlet, optionally on a remote machine. For example:
-    Get-Counter -ListSet <TAB>
-    Get-Counter -cn 127.0.0.1 -ListSet <TAB>
-'@)]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -73,11 +57,6 @@ Complete counter sets for the Get-Counter cmdlet, optionally on a remote machine
 #
 function GetWinEvent_LogNameCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'LogName',
-        Command = 'Get-WinEvent',
-        Description = 'Completes names for the logs, for example:  Get-WinEvent -LogName <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalCn = @{}
@@ -104,11 +83,6 @@ function GetWinEvent_LogNameCompleter
 #
 function GetWinEvent_ListLogCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'ListLog',
-        Command = 'Get-WinEvent',
-        Description = 'Completes names for the logs, for example:  Get-WinEvent -ListLog <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.GetLogNames() | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | ForEach-Object {
@@ -124,14 +98,52 @@ function GetWinEvent_ListLogCompleter
 #
 function GetWinEvent_ListProviderCompleter
 {
-    [ArgumentCompleter(
-        Parameter = 'ListProvider',
-        Command = 'Get-WinEvent',
-        Description = 'Completes names of the providers, for example:  Get-WinEvent -ListProvider <TAB>'
-    )]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     [System.Diagnostics.Eventing.Reader.EventLogSession]::GlobalSession.GetProviderNames() | Where-Object {$_ -like "*$wordToComplete*"} | Sort-Object | ForEach-Object {
         New-CompletionResult $_ $_
     }
 }
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-Counter' `
+    -Parameter 'Counter' `
+    -Description @'
+Complete counter for the Get-Counter cmdlet, optionally on a remote machine. For example:
+    Get-Counter -Counter <TAB>
+    Get-Counter -cn 127.0.0.1 -Counter <TAB>
+'@ `
+    -ScriptBlock $function:CounterParameterCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-Counter' `
+    -Parameter 'ListSet' `
+    -Description @'
+Complete counter sets for the Get-Counter cmdlet, optionally on a remote machine. For example:
+    Get-Counter -ListSet <TAB>
+    Get-Counter -cn 127.0.0.1 -ListSet <TAB>
+'@ `
+    -ScriptBlock $function:ListSetParameterCompletion
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-WinEvent' `
+    -Parameter 'LogName' `
+    -Description 'Completes names for the logs, for example:  Get-WinEvent -LogName <TAB>' `
+    -ScriptBlock $function:GetWinEvent_LogNameCompleter
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-WinEvent' `
+    -Parameter 'ListLog' `
+    -Description 'Completes names for the logs, for example:  Get-WinEvent -ListLog <TAB>' `
+    -ScriptBlock $function:GetWinEvent_ListLogCompleter
+
+
+Register-ArgumentCompleter `
+    -Command 'Get-WinEvent' `
+    -Parameter 'ListProvider' `
+    -Description 'Completes names of the providers, for example:  Get-WinEvent -ListProvider <TAB>' `
+    -ScriptBlock $function:GetWinEvent_ListProviderCompleter

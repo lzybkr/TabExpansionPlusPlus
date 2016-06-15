@@ -5,10 +5,6 @@
 #
 function ScheduledTaskTaskNameArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'TaskName',
-        Command = { Get-CommandWithParameter -Module ScheduledTasks -ParameterName TaskName },
-        Description = 'Complete task names')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-ScheduledTask -TaskName "$wordToComplete*" |
@@ -26,12 +22,6 @@ function ScheduledTaskTaskNameArgumentCompletion
 #
 function ScheduledTaskTaskPathArgumentCompletion
 {
-    [ArgumentCompleter(
-        Parameter = 'TaskPath',
-        Command = {
-            # REVIEW: should Set-ScheduledTask be excluded?
-            Get-CommandWithParameter -Module ScheduledTasks -ParameterName TaskPath },
-        Description = 'Complete task path arguments for scheduled task cmdlets')]
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-ScheduledTask -TaskPath "*$wordToComplete*" |
@@ -40,3 +30,17 @@ function ScheduledTaskTaskPathArgumentCompletion
             New-CompletionResult $_.TaskPath $_.Description
         }
 }
+
+
+Register-ArgumentCompleter `
+    -Command ('Disable-ScheduledTask','Enable-ScheduledTask','Export-ScheduledTask','Get-ClusteredScheduledTask','Get-ScheduledTask','Get-ScheduledTaskInfo','Register-ClusteredScheduledTask','Register-ScheduledTask','Set-ClusteredScheduledTask','Set-ScheduledTask','Start-ScheduledTask','Stop-ScheduledTask','Unregister-ClusteredScheduledTask','Unregister-ScheduledTask') `
+    -Parameter 'TaskName' `
+    -Description 'Complete task names' `
+    -ScriptBlock $function:ScheduledTaskTaskNameArgumentCompletion
+
+
+Register-ArgumentCompleter `
+    -Command ('Disable-ScheduledTask','Enable-ScheduledTask','Export-ScheduledTask','Get-ScheduledTask','Get-ScheduledTaskInfo','Register-ScheduledTask','Set-ScheduledTask','Start-ScheduledTask','Stop-ScheduledTask','Unregister-ScheduledTask') `
+    -Parameter 'TaskPath' `
+    -Description 'Complete task path arguments for scheduled task cmdlets' `
+    -ScriptBlock $function:ScheduledTaskTaskPathArgumentCompletion
