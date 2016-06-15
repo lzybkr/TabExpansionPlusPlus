@@ -248,9 +248,32 @@ function ImportModuleNameCompleter
 {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
-        $tooltip = "Description: {0}`nModuleType: {1}`nPath: {2}" -f $_.Description,$_.ModuleType,$_.Path
-        New-CompletionResult $_.Name $tooltip
+    if ($wordToComplete -and $wordToComplete.Contains('\'))
+    {
+        # Looks like a path.
+        #
+        # Let's complete directories first, then files that look like they could be modules.
+        #
+        # TODO: might be nice to not wipe out relative paths with full paths
+
+        # Directories:
+        Microsoft.PowerShell.Management\Get-ChildItem -Path "$wordToComplete*" -Directory | Sort-Object Name | ForEach-Object {
+            New-CompletionResult ($_.FullName + '\')
+        }
+
+        # Files:
+        Microsoft.PowerShell.Management\Get-ChildItem -Path "$wordToComplete*" -File -Include '*.ps*1', '*.dll' | Sort-Object Name | ForEach-Object {
+            New-CompletionResult $_.FullName
+        }
+    }
+    else
+    {
+        # Standard module name (for stuff already in $Env:PsModulePath).
+
+        Microsoft.PowerShell.Core\Get-Module -ListAvailable -Name "$wordToComplete*" | Sort-Object Name | ForEach-Object {
+            $tooltip = "Description: {0}`nModuleType: {1}`nPath: {2}" -f $_.Description,$_.ModuleType,$_.Path
+            New-CompletionResult $_.Name $tooltip
+        }
     }
 }
 
