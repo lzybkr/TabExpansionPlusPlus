@@ -167,6 +167,8 @@ function Get-CompletionPrivateData
         [string]
         $Key)
 
+    if(!$Key) 
+    { return $completionPrivateData }
 
     $cacheValue = $completionPrivateData[$key]
     if ((Get-Date) -lt $cacheValue.ExpirationTime) {
