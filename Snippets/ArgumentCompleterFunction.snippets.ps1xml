@@ -107,5 +107,155 @@ function
         </Code>
     </Snippet>
 
+    <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: Function-ArgumentCompleter - Simple</Title>
+            <Description>Provides snippet for argument completer function.</Description>
+            <Author>Kurt Roggen [BE]</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Code>
+            <Script Language='PowerShell' CaretOffset='5'>
+                <![CDATA[#
+
+# Argument Completion function <Topic>
+function <Module>_<Topic>NameArgumentCompletion
+{
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    <SourceModule>\<Verb-Noun> -Name "$wordToComplete*" |
+        Sort-Object -Property Name |
+        ForEach-Object {
+                $CompletionText = "{0}" -f $_.Name
+                $ToolTip        = "{0}" -f $_.Description
+                $ListItemText   = "{0}" -f $_.Name
+
+                New-CompletionResult -CompletionText $CompletionText -ListItemText $ListItemText -ToolTip $ToolTip
+        }
+}
+
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+    <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: Function-ArgumentCompleter - With Parameter Context</Title>
+            <Description>Provides snippet for argument completer function with parameter context.</Description>
+            <Author>Kurt Roggen [BE]</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Code>
+            <Script Language='PowerShell' CaretOffset='5'>
+                <![CDATA[#
+
+# Argument Completion function <Topic> (With Parameter Context)
+function <Module>_<Topic>NameArgumentCompletion
+{
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $optionalParams = @{}
+    $ComputerName = $fakeBoundParameter["ComputerName"]
+    $CimSession   = $fakeBoundParameter["CimSession"]
+    $Cluster      = $fakeBoundParameter["Cluster"]
+
+    if($ComputerName) { $optionalParams.ComputerName = $ComputerName }
+    if($CimSession)   { $optionalParams.CimSession   = $CimSession   }
+    if($Cluster)      { $optionalParams.Cluster      = $Cluster      }
+
+    <SourceModule>\<Verb-Noun> -Name "$wordToComplete*" @optionalParams |
+        Sort-Object -Property Name |
+        ForEach-Object {
+                $CompletionText = "{0}" -f $_.Name
+                $ToolTip        = "{0}" -f $_.Description
+                $ListItemText   = "{0}" -f $_.Name
+
+                New-CompletionResult -CompletionText $CompletionText -ListItemText $ListItemText -ToolTip $ToolTip
+        }
+}
+
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+    <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: Function-ArgumentCompleter - With Argument Caching</Title>
+            <Description>Provides snippet for argument completer function with argument caching.</Description>
+            <Author>Kurt Roggen [BE]</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Code>
+            <Script Language='PowerShell' CaretOffset='5'>
+                <![CDATA[#
+
+# Argument Completion function <Topic> (With argument caching)
+function <Module>_<Topic>NameArgumentCompletion
+{
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $optionalParams = @{}
+    $ComputerName = $fakeBoundParameter["ComputerName"]
+    $CimSession   = $fakeBoundParameter["CimSession"]
+    $Cluster      = $fakeBoundParameter["Cluster"]
+
+    if($ComputerName) { $optionalParams.ComputerName = $ComputerName }
+    if($CimSession)   { $optionalParams.CimSession   = $CimSession   }
+    if($Cluster)      { $optionalParams.Cluster      = $Cluster      }
+
+    $CacheKey = if($ComputerName) { "HotFix_Cache_$ComputerName" } else { "HotFix_Cache" }
+    $Cache = Get-CompletionPrivateData -Key $CacheKey
+    if ($Cache) { return $Cache }
+
+    $ArgumentList = <SourceModule>\<Verb-Noun> -Name "$wordToComplete*" @optionalParams |
+        Sort-Object -Property Name |
+        ForEach-Object {
+                $CompletionText = "{0}" -f $_.Name
+                $ToolTip        = "{0}" -f $_.Description
+                $ListItemText   = "{0}" -f $_.Name
+
+                New-CompletionResult -CompletionText $CompletionText -ListItemText $ListItemText -ToolTip $ToolTip
+        }
+    
+    Set-CompletionPrivateData -Key $CacheKey -Value $ArgumentList -ExpirationSeconds 300  # Expiration: 5 min
+    return $ArgumentList
+}
+
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+
+    <Snippet Version='1.0.0'>
+        <Header>
+            <Title>TabExpansion++: Register-ArgumentCompleter</Title>
+            <Description>Provides snippet for argument completer registration.</Description>
+            <Author>Kurt Roggen [BE]</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Code>
+            <Script Language='PowerShell' CaretOffset='5'>
+                <![CDATA[#
+
+# <Topic>
+Register-ArgumentCompleter `
+    -Command ('<Verb-Noun>','<Verb-Noun>') `
+    -Parameter 'Name' `
+    -Description 'Complete names, for example: <Verb-Noun> -Name <TAB>' `
+    -ScriptBlock $function:<Module>_<Topic>NameArgumentCompletion
+
+]]>
+            </Script>
+        </Code>
+    </Snippet>
+
 </Snippets>
 
