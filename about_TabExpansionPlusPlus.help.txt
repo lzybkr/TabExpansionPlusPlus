@@ -220,7 +220,7 @@ LONG DESCRIPTION
     it is possible to cache data to speed up your completer.  TabExpansionPlusPlus
     provides a couple of useful utilities to help.
 
-    First, there are two functions to give you simple way to save and retrive
+    First, there are two functions to give you a simple way to save and retrieve
     your cached data:
 
         Set-CompletionPrivateData
