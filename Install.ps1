@@ -20,6 +20,7 @@ $fileList = @(
     'DnsServer.ArgumentCompleters.ps1'
     'FailoverClusters.ArgumentCompleters.ps1'
     'GroupPolicy.ArgumentCompleters.ps1'
+    'Hexo.ArgumentCompleters.ps1'
     'Hyper-V.ArgumentCompleters.ps1'
     'ISE.ArgumentCompleters.ps1'
     'Microsoft.Azure.ArgumentCompleters.ps1'
