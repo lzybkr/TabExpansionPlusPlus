@@ -24,24 +24,24 @@ function DhcpServer_v4ScopeIdArgumentCompletion
 
     if($ComputerName) { $optionalParams.ComputerName = $ComputerName }
     if($CIMSession)   { $optionalParams.CimSession   = $CIMSession }
- 
+
     $CacheKey = if($ComputerName)   { "DHCPServer_v4Scope_$ComputerName" } 
                 elseif($CIMSession) { "DHCPServer_v4Scope_$CimSession" }
                 else { "DHCPServer_v4Scope" }
     $Cache = Get-CompletionPrivateData -Key $CacheKey
-    if ($Cache) { return $Cache }
+    if($Cache) { 
+        $List = $Cache 
+    } else { 
+        $List = DhcpServer\Get-DhcpServerv4Scope @optionalParams   # This completion is slow 
+        Set-CompletionPrivateData -Key $CacheKey -Value $List -ExpirationSeconds 900 # Expiration: 15 min
+    }
 
-    # These completions are slow 
-    $ArgumentList = DhcpServer\Get-DhcpServerv4Scope @optionalParams |
-        Where-Object {$_.Name -like "$wordToComplete*"} |
+    $List | Where-Object {$_.Name -like "$wordToComplete*"} |
         Sort-Object -Property Name |
         ForEach-Object {
             $ToolTip = "Name: {0} - State: {1} - ScopeId: {2} `nLease Duration: {3}" -f $_.Name,$_.State,$_.ScopeId,$_.LeaseDuration
             New-CompletionResult -CompletionText $_.ScopeId -ToolTip $ToolTip -ListItemText $_.Name
         }
-
-    Set-CompletionPrivateData -Key $CacheKey -Value $ArgumentList -ExpirationSeconds 900 # Expiration: 15 min
-    return $ArgumentList
 }
 # DHCPSERVER v6 SCOPEID - N/A
 
