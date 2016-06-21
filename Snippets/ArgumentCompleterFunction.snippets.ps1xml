@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8' ?>
+<?xml version='1.0' encoding='utf-8' ?>
 <Snippets  xmlns='http://schemas.microsoft.com/PowerShell/Snippets'>
     <Snippet Version='1.0.0'>
         <Header>
@@ -62,7 +62,7 @@ function
             </Script>
         </Code>
     </Snippet>
-        <Snippet Version='1.0.0'>
+    <Snippet Version='1.0.0'>
         <Header>
             <Title>TabExpansion++: ArgumentCompleter paired with initialization</Title>
             <Description>Adding two functions: one with [InitializeArgumentCompleter()] and other with [ArgumentCompleter()] paired with it.</Description>
@@ -211,9 +211,14 @@ function <Module>_<Topic>NameArgumentCompletion
 
     $CacheKey = if($ComputerName) { "HotFix_Cache_$ComputerName" } else { "HotFix_Cache" }
     $Cache = Get-CompletionPrivateData -Key $CacheKey
-    if ($Cache) { return $Cache }
+    if ($Cache) { 
+        $List = $Cache 
+    } else { 
+        $List = <SourceModule>\<Verb-Noun> -Name "$wordToComplete*" @optionalParams
+        Set-CompletionPrivateData -Key $CacheKey -Value $List -ExpirationSeconds 300 # Expiration: 5 min
+    }
 
-    $ArgumentList = <SourceModule>\<Verb-Noun> -Name "$wordToComplete*" @optionalParams |
+    $List | 
         Sort-Object -Property Name |
         ForEach-Object {
                 $CompletionText = "{0}" -f $_.Name
@@ -222,9 +227,6 @@ function <Module>_<Topic>NameArgumentCompletion
 
                 New-CompletionResult -CompletionText $CompletionText -ListItemText $ListItemText -ToolTip $ToolTip
         }
-    
-    Set-CompletionPrivateData -Key $CacheKey -Value $ArgumentList -ExpirationSeconds 300  # Expiration: 5 min
-    return $ArgumentList
 }
 
 ]]>
