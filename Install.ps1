@@ -1,9 +1,10 @@
 
+[CmdletBinding()]
 param([string]$InstallDirectory)
 
 $fileList = @(
 ### Base module files
-    'TabExpansionPlus.psm1'
+    'TabExpansionPlusPlus.psm1'
     'TabExpansionPlusPlus.psd1'
     'about_TabExpansionPlusPlus.help.txt'
     'License.txt'
@@ -53,7 +54,8 @@ $fileList = @(
 if ('' -eq $InstallDirectory)
 {
     $personalModules = Join-Path -Path ([Environment]::GetFolderPath('MyDocuments')) -ChildPath WindowsPowerShell\Modules
-    if (($env:PSModulePath -split ';') -notcontains $personalModules)
+    $psModPath = $env:PSModulePath -split ';' | % { $_.Trim('\') }
+    if ($psModPath -notcontains $personalModules)
     {
         Write-Warning "$personalModules is not in `$env:PSModulePath"
     }
@@ -74,6 +76,7 @@ if (!(Test-Path $InstallDirectory))
 
 $wc = new-object System.Net.WebClient
 $fileList | ForEach-Object {
+    Write-Verbose "Downloading $_"
     $wc.DownloadFile("https://raw.github.com/lzybkr/TabExpansionPlusPlus/master/$_",
                      "$installDirectory\$_")
     }
