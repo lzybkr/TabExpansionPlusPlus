@@ -19,15 +19,24 @@ function DhcpServer_v4ScopeIdArgumentCompletion
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalParams = @{}
-    $CN         = $fakeBoundParameter["ComputerName"]
-    $CIMSession = $fakeBoundParameter["CimSession"]
+    $ComputerName = $fakeBoundParameter["ComputerName"]
+    $CIMSession   = $fakeBoundParameter["CimSession"]
 
-    if($CN)         { $optionalParams.ComputerName = $CN }
-    if($CIMSession) { $optionalParams.CimSession   = $CIMSession }
-    
-    # These completions are slow 
-    DhcpServer\Get-DhcpServerv4Scope @optionalParams |
-        Where-Object {$_.Name -like "$wordToComplete*"} |
+    if($ComputerName) { $optionalParams.ComputerName = $ComputerName }
+    if($CIMSession)   { $optionalParams.CimSession   = $CIMSession }
+
+    $CacheKey = if($ComputerName)   { "DHCPServer_v4Scope_$ComputerName" } 
+                elseif($CIMSession) { "DHCPServer_v4Scope_$CimSession" }
+                else { "DHCPServer_v4Scope" }
+    $Cache = Get-CompletionPrivateData -Key $CacheKey
+    if($Cache) { 
+        $List = $Cache 
+    } else { 
+        $List = DhcpServer\Get-DhcpServerv4Scope @optionalParams   # This completion is slow 
+        Set-CompletionPrivateData -Key $CacheKey -Value $List -ExpirationSeconds 900 # Expiration: 15 min
+    }
+
+    $List | Where-Object {$_.Name -like "$wordToComplete*"} |
         Sort-Object -Property Name |
         ForEach-Object {
             $ToolTip = "Name: {0} - State: {1} - ScopeId: {2} `nLease Duration: {3}" -f $_.Name,$_.State,$_.ScopeId,$_.LeaseDuration
@@ -42,11 +51,11 @@ function DhcpServer_v4PolicyNameArgumentCompletion
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     $optionalParams = @{}
-    $CN         = $fakeBoundParameter["ComputerName"]
-    $CIMSession = $fakeBoundParameter["CimSession"]
+    $ComputerName = $fakeBoundParameter["ComputerName"]
+    $CIMSession   = $fakeBoundParameter["CimSession"]
 
-    if($CN)         { $optionalParams.ComputerName = $CN }
-    if($CIMSession) { $optionalParams.CimSession   = $CIMSession }
+    if($ComputerName) { $optionalParams.ComputerName = $ComputerName }
+    if($CIMSession)   { $optionalParams.CimSession   = $CIMSession }
 
     DhcpServer\Get-DhcpServerv4Policy @optionalParams |
         Where-Object {$_.Name -like "$wordToComplete*"} |
