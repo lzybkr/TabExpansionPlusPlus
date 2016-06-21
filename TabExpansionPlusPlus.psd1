@@ -5,7 +5,7 @@
 RootModule = 'TabExpansionPlusPlus.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1'
+ModuleVersion = '1.2'
 
 # ID used to uniquely identify this module
 GUID = '2e15ae89-6988-46fc-9996-d2c13257c6f7'
