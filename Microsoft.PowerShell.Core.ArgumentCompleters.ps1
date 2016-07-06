@@ -258,7 +258,22 @@ function ImportModuleNameCompleter
 
         # Directories:
         Microsoft.PowerShell.Management\Get-ChildItem -Path "$wordToComplete*" -Directory | Sort-Object Name | ForEach-Object {
-            New-CompletionResult ($_.FullName + '\')
+            $dir = $_
+
+            # If the directory has a module file with the same name as the directory,
+            # let's guess that the user is going for that and complete to that first.
+
+            '.psd1', '.psm1', '.dll' | ForEach-Object {
+
+                $modPath = Join-Path $dir.FullName ($dir.Name + $_)
+
+                if( (Test-Path $modPath) )
+                {
+                    New-CompletionResult $modPath
+                }
+            }
+
+            New-CompletionResult ($dir.FullName + '\')
         }
 
         # Files:
