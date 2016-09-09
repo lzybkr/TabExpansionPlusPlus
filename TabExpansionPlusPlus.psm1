@@ -256,7 +256,8 @@ function Get-CommandTreeCompletion
     # if we find the element that matches $wordToComplete.
     for ($i = 1; $i -lt $commandElements.Count; $i++)
     {
-        if (!($commandElements[$i] -is [System.Management.Automation.Language.StringConstantExpressionAst]))
+        if (!($commandElements[$i] -is [System.Management.Automation.Language.StringConstantExpressionAst]) -and
+            !($commandElements[$i] -is [System.Management.Automation.Language.CommandParameterAst]))
         {
             # Ignore arguments that are expressions.  In some rare cases this
             # could cause strange completions because the context is incorrect, e.g.:
@@ -267,7 +268,7 @@ function Get-CommandTreeCompletion
             continue
         }
 
-        if ($commandElements[$i].Value -eq $wordToComplete)
+        if ($commandElements[$i].Extent.Text -eq $wordToComplete)
         {
             $CommandTree = $CommandTree |
                 Where-Object { $_.Command -like "$wordToComplete*" -or $_.CompletionGenerator -ne $null }
@@ -276,7 +277,7 @@ function Get-CommandTreeCompletion
 
         foreach ($subCommand in $CommandTree)
         {
-            if ($subCommand.Command -eq $commandElements[$i].Value)
+            if ($subCommand.Command -eq $commandElements[$i].Extent.Text)
             {
                 if (!$subCommand.Argument)
                 {
