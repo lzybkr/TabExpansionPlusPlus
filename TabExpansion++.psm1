@@ -413,7 +413,7 @@ function Register-ArgumentCompleter
         # We can skip this step if we created the script block (Register-ArgumentCompleter was
         # called internally).
         if ($fnDefn -ne $null){
-            $ScriptBlock = $ScriptBlock.Ast.Body.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
+            $ScriptBlock = (Get-PSCallStack)[0].InvocationInfo.MyCommand.Module.NewBoundScriptBlock($ScriptBlock);
         }
         else {
             $ScriptBlock = $ScriptBlock.Ast.GetScriptBlock()  # Don't reparse, just get a new ScriptBlock.
