@@ -914,7 +914,7 @@ function global:TabExpansion2
         # No results, if this module has overridden another TabExpansion2 function, call it
         # but only if it's not the built-in function (which we assume if function isn't
         # defined in a file.
-        if ($oldTabExpansion2 -ne $null -and $oldTabExpansion2.File -ne $null)
+        if ($oldTabExpansion2 -ne $null -and ($oldTabExpansion2.File -ne $null -or $global:customTabExpansion2))
         {
             return (& $oldTabExpansion2 @PSBoundParameters)
         }
